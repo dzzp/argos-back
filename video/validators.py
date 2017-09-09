@@ -1,5 +1,5 @@
 import os
-from django.core.exceptions import ValidateError
+from django.core.exceptions import ValidationError
 
 def validate_file_extension(value):
     ext = os.path.splitext(value.name)[1]
@@ -8,8 +8,9 @@ def validate_file_extension(value):
         '.mpg',
         '.mpeg',
         '.wmv',
-        '.mov'
+        '.mp4',
+        '.mov',
     ]
 
     if not ext.lower() in valid_ext:
-        raise ValidationError('Unsupported file extension')
+        raise ValidationError('Unsupoorted file extension')
