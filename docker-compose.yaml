@@ -1,0 +1,33 @@
+version: '2'
+services:
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=pickeruser
+      - POSTGRES_PASSWORD=temporaryP@SSW0rD
+      - POSTGRES_DB=datapicker
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d:ro
+      - ./postgres_db:/var/lib/postgresql/data:rw
+    networks:
+      - back
+    ports:
+      - "5432:5432"
+  data-picker:
+    build: .
+    working_dir: /opt/data-picker
+    command: bash -c "python manage.py runserver 0.0.0.0:80"
+    ports:
+        - "80:80"
+    environment:
+      - POSTGRES_HOST=postgres
+    networks:
+      - front
+      - back
+    depends_on:
+      - postgres
+    links:
+      - postgres
+networks:
+  front:  # exposed
+  back:  # not exposed (DO NOT OPEN THESE PORTS)
