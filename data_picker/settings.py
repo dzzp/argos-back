@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'data_picker',
     'video',
 ]
 
@@ -88,8 +89,8 @@ DATABASES = {
         'NAME': 'datapicker',
         'USER': 'pickeruser',
         'PASSWORD': 'temporaryP@SSW0rD',
-        'HOST': 'localhost',
-        #'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        #'HOST': 'localhost',
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
         'PORT': '',
     }
 }
