@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
 {% block contents %}
-<h1>Main Page</h1>
+
+<div>
+  <a href="{% url 'upload_path' %}">Uplaod path</a>
+  <a href="{% url 'load' %}">Load project</a>
+</div>
 {% endblock %}

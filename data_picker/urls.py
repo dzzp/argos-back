@@ -16,10 +16,11 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
-from video.views import main_view, upload_path_view
+from video.views import main_view, upload_path_view, load_project_view
 
 urlpatterns = [
     url(r'^$', main_view, name='main'),
     url(r'^upload_path/$', upload_path_view, name='upload_path'),
+    url(r'^load_project/$', load_project_view, name='load'),
     url(r'^admin/', admin.site.urls),
 ]

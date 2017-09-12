@@ -8,3 +8,6 @@ def main_view(request):
 def upload_path_view(request):
     return render(request, 'base.html')
 
+
+def load_project_view(request):
+    return render(request, 'base.html')
