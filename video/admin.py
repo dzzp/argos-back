@@ -3,7 +3,7 @@ from video.models import Video, DataSet
 
 
 class VideoAdmin(admin.ModelAdmin):
-    list_display = ('_id', 'video', 'running_time')
+    list_display = ('_id', 'video_path', 'running_time')
 
 
 class DataSetAdmin(admin.ModelAdmin):

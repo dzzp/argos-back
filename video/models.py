@@ -1,15 +1,10 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
-from video.validators import validate_file_extension
-
 
 class Video(models.Model):
     _id = models.AutoField(primary_key=True)
-    video = models.FileField(
-        upload_to='assets/',
-        validators=[validate_file_extension]
-    )
+    video_path = models.TextField()
     running_time = models.DateTimeField()
 
     def __str__(self):
