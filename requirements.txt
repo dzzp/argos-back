@@ -1,2 +1,3 @@
 Django
-pycopg2
+psycopg2
+django-phonenumber-field
