@@ -4,8 +4,8 @@ from django.contrib.postgres.fields import ArrayField
 
 class Video(models.Model):
     _id = models.AutoField(primary_key=True)
-    video_path = models.TextField()
-    running_time = models.DateTimeField()
+    video_path = models.TextField(unique=True)
+    running_time = models.TimeField()
 
     def __str__(self):
         return str(self._id)

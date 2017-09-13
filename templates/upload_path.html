@@ -4,10 +4,10 @@
 <!--<form method="POST" enctype="multipart/form-data">-->
 <form method="POST">
   {% csrf_token %}
-  <div class="form-group">
+  <div class="form-group mx-sm-3">
     <label for="file-path">Upload file path</label>
-    <input type="file" class="form-control-file" id="file_path" name="file_path">
+    <input type="text" id="file-path" class="form-control" name="file-path">
   </div>
-  <button type="submit">Upload</button>
+  <button type="submit" class="btn">Upload</button>
 </form>
 {% endblock %}
