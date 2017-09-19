@@ -1,3 +1,5 @@
 Django
 psycopg2
 django-phonenumber-field
+sk-video
+av

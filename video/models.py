@@ -7,7 +7,7 @@ from video.validators import lnglat_validator
 class Video(models.Model):
     _id = models.AutoField(primary_key=True)
     video_path = models.TextField(unique=True)
-    running_time = models.IntegerField()    # Second
+    running_time = models.FloatField()    # Second
     frame = models.CharField(max_length=16, default='0')
 
     def __str__(self):
