@@ -1,8 +1,9 @@
+import skvideo.io
 
 
 class FrameWorker:
     def __init__(self):
-        self.running_time = '00:00:00.00'
+        self.running_time = 0
         self.frame = 0
 
     def __init__(self, running_time, frame):
@@ -10,7 +11,12 @@ class FrameWorker:
         self.frame = frame
 
     def extract_video_info(self, video):
-        pass
+        metadata = skvideo.io.ffprobe(video)
+        fps = metadata['video']['@r_frame_rate']
+        duration_sec = metadata['video']['@duration']
+
+        self.running_time = duration_sec
+        self.frame = fps
 
     def extract_video_frame(self, video, interval):
         pass
