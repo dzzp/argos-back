@@ -7,16 +7,27 @@ from video.calculation import NumericStringParser
 
 
 class FrameWorker:
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    BASE_DIR = os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    ) + '/assets/'
 
-    def __init__(self):
+    def __init__(self, *arg):
+        if arg:
+            self.video = arg[0]
+        else:
+            self.video = ''
         self.running_time = 0
         self.frame = 0
-        self.video = ''
+        print(arg[0])
+        print(self.video)
 
-    def extract_video_info(self, video):
-        self.video = video
-        metadata = skvideo.io.ffprobe(video)
+    def extract_video_info(self, *arg):
+        if arg:
+            self.video = arg[0]
+        
+        metadata = skvideo.io.ffprobe(self.video)
 
         # fps
         self.frame = self.calculate_video_frame(
@@ -30,12 +41,15 @@ class FrameWorker:
 
         return result
 
-    def extract_video_frame(self, video, interval):
-        container = av.open(video)
+    def extract_video_frame(self, interval, *arg):
+        if arg:
+            self.video = arg[0]
+        
+        container = av.open(self.video)
         pass_count = 0
 
-        folder_name = os.path.basename(video)
-        full_path = self.BASE_DIR + '/' + folder_name
+        folder_name = os.path.basename(self.video)
+        full_path = self.BASE_DIR + 'google'
         
         try:
             os.mkdir(full_path)
@@ -49,15 +63,24 @@ class FrameWorker:
                 )
             pass_count += 1
 
-    def cut_video(self, video, start, end):
+    def cut_video(self, start, end, *arg):
         pass
 
-    def save_video_info(self, video):
-        info = Video.objects.get(video=video)
+    def save_video_info(self, *arg):
+        if arg:
+            self.video = arg[0]
+        '''
+        info = Video.objects.get(video=self.video)
         info.frame = self.frame
         info.running_time = self.running_time
         info.save()
+        '''
+        Video.objects.create(
+            video_path=self.video,
+            frame=self.frame,
+            running_time=self.running_time
+        )
 
     # for testing
-    def extract_random_frame(self, video):
+    def extract_random_frame(self, *arg):
         pass

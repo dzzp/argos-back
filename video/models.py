@@ -8,7 +8,7 @@ class Video(models.Model):
     _id = models.AutoField(primary_key=True)
     video_path = models.TextField(unique=True)
     running_time = models.FloatField(default=0.0)    # Second
-    frame = models.CharField(max_length=16, default='0')
+    frame = models.FloatField(default=0.0)
 
     def __str__(self):
         return str(self._id)
