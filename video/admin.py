@@ -1,5 +1,5 @@
 from django.contrib import admin
-from video.models import Video, SubVideo, DataSet
+from video.models import Video, SubVideo, DataSet, TestVideo
 
 
 class VideoAdmin(admin.ModelAdmin):
@@ -13,7 +13,11 @@ class SubVideoAdmin(admin.ModelAdmin):
 class DataSetAdmin(admin.ModelAdmin):
     list_display = ('_id', 'video', 'coordinate', 'time')
 
+class TestVideoAdmin(admin.ModelAdmin):
+    list_display = ('video',)
 
 admin.site.register(Video, VideoAdmin)
 admin.site.register(SubVideo, SubVideoAdmin)
 admin.site.register(DataSet, DataSetAdmin)
+
+admin.site.register(TestVideo, TestVideoAdmin)
