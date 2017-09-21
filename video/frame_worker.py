@@ -48,8 +48,8 @@ class FrameWorker:
         container = av.open(self.video)
         pass_count = 0
 
-        folder_name = os.path.basename(self.video)
-        full_path = self.BASE_DIR + 'google'
+        folder_name = os.path.splitext(os.path.basename(self.video))[0]
+        full_path = self.BASE_DIR + folder_name
         
         try:
             os.mkdir(full_path)
