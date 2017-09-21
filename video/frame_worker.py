@@ -1,27 +1,64 @@
+import os
+import av
 import skvideo.io
+from video.models import Video, SubVideo
+from video.calculation import NumericStringParser
 
 
 class FrameWorker:
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
     def __init__(self):
         self.running_time = 0
         self.frame = 0
+        self.video = ''
 
-    def __init__(self, running_time, frame):
-        self.running_time = running_time
-        self.frame = frame
+    def is_video_exists(self, video):
+        if os.path.isfile(video):
+            return True
+        else:
+            return False
 
     def extract_video_info(self, video):
+        self.video = video
         metadata = skvideo.io.ffprobe(video)
-        fps = metadata['video']['@r_frame_rate']
-        duration_sec = metadata['video']['@duration']
+        self.frame = self.calculate_video_frame(metadata['video']['@r_frame_rate'])    # fps
+        self.running_time = metadata['video']['@duration']    # duration
 
-        self.running_time = duration_sec
-        self.frame = fps
+    def calculate_video_frame(self, data):
+        num_str_parser = NumericStringParser()
+        result = num_str_parser.eval(data)
+
+        return result
 
     def extract_video_frame(self, video, interval):
-        pass
+        container = av.open(video)
+        pass_count = 0
+
+        folder_name = os.path.basename(video)
+        full_path = self.BASE_DIR + '/' + folder_name
+        
+        try:
+            os.mkdir(full_path)
+        except:
+            print('Folder alreay exists..')
+        
+        for frame in container.decode(video=0):
+            if pass_count % interval == 0:
+                frame.to_image().save(full_path + '/test_img-%04d.jpeg' % frame.index)
+            pass_count += 1
 
     def cut_video(self, video, start, end):
+        pass
+
+    def save_video_info(self, video):
+        info = Video.objects.get(video=video)
+        info.frame = self.frame
+        info.running_time = self.running_time
+        info.save()
+
+    # for testing
+    def extract_random_frame(self, video):
         pass
 
     '''
