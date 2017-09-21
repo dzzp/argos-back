@@ -2,22 +2,27 @@ import os
 
 from django.shortcuts import render
 from video.models import Video
-
+from video.validators import file_validator
 
 def main_view(request):
     return render(request, 'main.html')
 
 
 def upload_path_view(request):
+    error = None
     if request.method == 'POST':
-        file_types = ('.mov', '.mp4', '.avi')
-        file_ext = os.path.splitext(request.POST['file-path'])
-        if file_ext[-1] in file_types:
-            Video.objects.create(
-                video_path=request.POST['file-path'],
-            )
+        # Checking file type
+        if  file_validator(request.POST['file-path']):
+            try:
+                Video.objects.create(
+                    video_path=request.POST['file-path'],
+                )
+            except:
+                error = {'error': '[ERROR] File already exists'}
+        else:
+            error = {'error': '[ERROR] File type error'}
 
-    return render(request, 'upload_path.html')
+    return render(request, 'upload_path.html', error)
 
 
 def load_project_view(request):

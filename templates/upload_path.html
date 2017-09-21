@@ -10,4 +10,8 @@
   </div>
   <button type="submit" class="btn">Upload</button>
 </form>
+
+{% if error %}
+<p>{{ error }}</p>
+{% endif %}
 {% endblock %}
