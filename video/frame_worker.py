@@ -1,7 +1,8 @@
 import os
 import av
 import skvideo.io
-from video.models import Video, SubVideo
+
+from video.models import Video
 from video.calculation import NumericStringParser
 
 
@@ -13,16 +14,14 @@ class FrameWorker:
         self.frame = 0
         self.video = ''
 
-    def is_video_exists(self, video):
-        if os.path.isfile(video):
-            return True
-        else:
-            return False
-
     def extract_video_info(self, video):
         self.video = video
         metadata = skvideo.io.ffprobe(video)
-        self.frame = self.calculate_video_frame(metadata['video']['@r_frame_rate'])    # fps
+
+        # fps
+        self.frame = self.calculate_video_frame(
+            metadata['video']['@r_frame_rate']
+        )
         self.running_time = metadata['video']['@duration']    # duration
 
     def calculate_video_frame(self, data):
@@ -41,11 +40,13 @@ class FrameWorker:
         try:
             os.mkdir(full_path)
         except:
-            print('Folder alreay exists..')
+            print('Folder already exists..')
         
         for frame in container.decode(video=0):
             if pass_count % interval == 0:
-                frame.to_image().save(full_path + '/test_img-%04d.jpeg' % frame.index)
+                frame.to_image().save(
+                    full_path + '/img-%04d.jpeg' % frame.index
+                )
             pass_count += 1
 
     def cut_video(self, video, start, end):
@@ -60,8 +61,3 @@ class FrameWorker:
     # for testing
     def extract_random_frame(self, video):
         pass
-
-    '''
-    def save_video_info(self, video):
-        pass
-    '''
