@@ -1,3 +1,4 @@
+from __future__ import division
 import os
 import av
 import skvideo.io
@@ -20,8 +21,6 @@ class FrameWorker:
             self.video = ''
         self.running_time = 0
         self.frame = 0
-        print(arg[0])
-        print(self.video)
 
     def extract_video_info(self, *arg):
         if arg:
@@ -55,11 +54,11 @@ class FrameWorker:
             os.mkdir(full_path)
         except:
             print('Folder already exists..')
-        
+
         for frame in container.decode(video=0):
             if pass_count % interval == 0:
                 frame.to_image().save(
-                    full_path + '/img-%04d.jpeg' % frame.index
+                    full_path + '/%d.jpeg' % frame.index
                 )
             pass_count += 1
 

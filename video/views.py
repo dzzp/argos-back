@@ -22,6 +22,7 @@ def upload_path_view(request):
                 video.save_video_info()
             except:
                 error = {'error': '[ERROR] File already exists'}
+            return render(request, 'select_person.html')
         else:
             error = {'error': '[ERROR] File type error'}
 
