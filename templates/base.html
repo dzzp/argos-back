@@ -12,18 +12,17 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
   </head>
   <body>
-    <h1>Hello</h1>
-
-    {% block contents %}
-    {% endblock %}
-
-    <footer class="footer">
-      <div class="container">
-          <span class="text-muted">FOOTER</span>
-      </div>
-    </footer>
+    <div id="left">
+      <p>Left</p>
+      {% block contents %}
+      {% endblock %}
+    </div>
+    <div id="right">
+      <!-- Map -->
+      <p>Right</p>
+    </div>
   </body>
 </html>

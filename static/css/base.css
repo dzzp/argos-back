@@ -1,0 +1,39 @@
+body, html {
+  margin: 0;
+  overflow: hidden;
+  height:100%;
+}
+
+/*@media (min-width: 768px){*/
+@media {
+  #left {
+    position: absolute;
+    top: 0px;
+    bottom: 0;
+    left: 0;
+    width: 25%;
+    overflow-y: scroll; 
+  }
+  
+  #right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    overflow-y: scroll;
+    width: 75%;
+  }
+}
+
+#left {
+  color: #ffffff;
+  background-color: #000000;
+  text-align: center;
+  height:100%;
+}
+
+#right {
+  height:100%;
+  background-color: #ffffff;
+  text-align: center;
+}
