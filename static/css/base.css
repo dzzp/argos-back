@@ -1,39 +1,24 @@
-body, html {
-  margin: 0;
-  overflow: hidden;
-  height:100%;
+body {
+    margin: 0 0 0 0;
+    width: 100%;
+    min-height: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: absolute;
 }
 
-/*@media (min-width: 768px){*/
-@media {
-  #left {
-    position: absolute;
-    top: 0px;
-    bottom: 0;
-    left: 0;
-    width: 25%;
-    overflow-y: scroll; 
-  }
-  
-  #right {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
+.full {
+    text-align: center;
+    height: 100%;
     overflow-y: scroll;
-    width: 75%;
-  }
 }
 
 #left {
-  color: #ffffff;
-  background-color: #000000;
-  text-align: center;
-  height:100%;
+    padding: 10px 10px 10px 10px;
+    background-color: #ffffff;
 }
 
 #right {
-  height:100%;
-  background-color: #ffffff;
-  text-align: center;
+    padding: 10px 10px 10px 10px;
+    background-color: #000000;
 }
