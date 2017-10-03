@@ -12,6 +12,7 @@ from data_picker.tools import response_code
 
 @api_view(['POST'])
 def detection(request):
+    print(request.data)
     serializer = VideoSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -21,6 +22,8 @@ def detection(request):
 
 @api_view(['GET'])
 def processing(request):
-    print(request)
-    return Response(request_code('processing_reid'))
-    #return Response(response_code('processing_detect'))
+    print(request.data)
+    if request.data['code'] == 'is_detect':
+        return Response(response_code('processing_detect'))
+    else:
+        return Response(response_code('processing_reid'))

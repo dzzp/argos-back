@@ -15,6 +15,6 @@ def response_code(code, is_json=True):
     }
 
     if is_json:
-        return json.dump(result)
+        return json.dumps(result)
     
     return result
