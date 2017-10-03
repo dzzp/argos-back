@@ -1,6 +1,5 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_excempt
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -12,7 +11,7 @@ from data_picker.tools import response_code
 
 
 @api_view(['POST'])
-def detect_response(request):
+def detection(request):
     serializer = VideoSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -21,12 +20,7 @@ def detect_response(request):
 
 
 @api_view(['GET'])
-def processing_detect(request):
-
-    return Response(response_code('processing_detect'))
-
-
-@api_view(['GET'])
-def processing_reid(request):
-
-    return Response(response_code('processing_reid'))
+def processing(request):
+    print(request)
+    return Response(request_code('processing_reid'))
+    #return Response(response_code('processing_detect'))
