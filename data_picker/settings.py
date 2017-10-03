@@ -87,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'datapicker',
         'USER': 'pickeruser',
-        'PASSWORD': 'temporaryP@SSW0rD',
+        'PASSWORD': 'temporary@P@SSW0rD',
         #'HOST': 'localhost',
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
         'PORT': '',
