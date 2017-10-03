@@ -3,7 +3,7 @@ from video.models import Video, TestVideo
 
 
 class VideoAdmin(admin.ModelAdmin):
-    list_display = ('_id', 'video_path', 'time', 'location')
+    list_display = ('_id', 'video_path', 'time', 'lat', 'lng')
 
 
 class TestVideoAdmin(admin.ModelAdmin):
