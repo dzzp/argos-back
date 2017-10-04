@@ -89,11 +89,3 @@ with detection_graph.as_default():
                     print(boxes[i])
             Image.fromarray(image_np).save('output_images/' + '.'.join(image_path.split('.')[:-1]).split('/')[-1] + '_det.png')
             print('time: %.3f' % (time.time() - pre_time))
-
-
-def detect_person(image_array):
-    with detection_graph.as_default():
-        with tf.Session(graph=detection_graph) as sess:
-            image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-            detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-            detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
