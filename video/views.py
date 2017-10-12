@@ -12,11 +12,12 @@ from data_picker.tools import response_code
 
 @api_view(['POST'])
 def detection(request):
-    serializer = VideoSerializer(data=request.data)
-    if serializer.is_valid():
+    for video in request.data['videos']:
+        serializer = VideoSerializer(data=video)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        return Response(response_code('processing_detect'))
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(response_code('processing_detect'))
 
 
 @api_view(['GET'])
