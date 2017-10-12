@@ -6,6 +6,7 @@ class Video(models.Model):
     _id = models.AutoField(primary_key=True)
     video_path = models.TextField(unique=True)
     time = models.DateTimeField()
+    memo = models.TextField(blank=True)
     lat = models.FloatField(default=0.0)
     lng = models.FloatField(default=0.0)
 
