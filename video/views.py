@@ -1,33 +1,28 @@
-import os
-
+from django.http import HttpResponse
 from django.shortcuts import render
+
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
 from video.models import Video
-from video.validators import file_validator
-from video.frame_worker import FrameWorker
-
-def main_view(request):
-    return render(request, 'main.html')
+from video.serializers import VideoSerializer, PersonSerializer
+from data_picker.tools import response_code
 
 
-def upload_path_view(request):
-    error = None
-    if request.method == 'POST':
-        # Checking file type
-        if  file_validator(request.POST['file-path']):
-            video = FrameWorker(request.POST['file-path'])
-            video.extract_video_info()
-            video.extract_video_frame(30)
-            
-            try:
-                video.save_video_info()
-            except:
-                error = {'error': '[ERROR] File already exists'}
-            return render(request, 'select_person.html')
-        else:
-            error = {'error': '[ERROR] File type error'}
-
-    return render(request, 'upload_path.html', error)
+@api_view(['POST'])
+def detection(request):
+    for video in request.data['videos']:
+        serializer = VideoSerializer(data=video)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+    return Response(response_code('processing_detect'))
 
 
-def load_project_view(request):
-    return render(request, 'base.html')
+@api_view(['GET'])
+def processing(request):
+    if request.data['code'] == 'is_detect':
+        return Response(response_code('processing_detect'))
+    else:
+        return Response(response_code('processing_reid'))

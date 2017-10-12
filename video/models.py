@@ -6,6 +6,7 @@ class Video(models.Model):
     _id = models.AutoField(primary_key=True)
     video_path = models.TextField(unique=True)
     time = models.DateTimeField()
+    memo = models.TextField(blank=True)
     lat = models.FloatField(default=0.0)
     lng = models.FloatField(default=0.0)
 
@@ -16,7 +17,7 @@ class Video(models.Model):
 class Person(models.Model):
     _id = models.AutoField(primary_key=True)
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
-    bbox_img_path = models.TextField()
+    bbox_path = models.TextField()
     feature_path = models.TextField()
     time = models.DateTimeField()
 

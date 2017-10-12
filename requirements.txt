@@ -4,3 +4,8 @@ django-phonenumber-field
 sk-video
 av
 pyparsing
+djangorestframework
+tensorflow
+lxml
+matplotlib
+pillow
