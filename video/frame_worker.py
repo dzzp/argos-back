@@ -2,8 +2,10 @@ import os
 import av
 import numpy as np
 
+from object_detection.main import detect_person 
 
 def extract_video_frame_array(file_list, interval=30):
+    print(file_list)
     for file_path in file_list:
         file_name = os.path.basename(file_path)
         folder_path = os.path.dirname(os.path.abspath(file_path))
@@ -23,6 +25,7 @@ def extract_video_frame_array(file_list, interval=30):
             if pass_count % interval == 0:
                 img = frame.to_image()
                 arr = np.array(img)
+                ret = detect_person(arr)
             # using detect function...
             pass_count += 1
 

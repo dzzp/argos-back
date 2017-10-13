@@ -12,18 +12,19 @@ from collections import defaultdict
 from io import StringIO
 from PIL import Image
 
-sys.path.append("..")
-from utils import label_map_util
-from utils import visualization_utils as vis_util
+# sys.path.append("/home/punk/data-picker/detection")
+# print(sys.path)
+from object_detection.utils import label_map_util
+from object_detection.utils import visualization_utils as vis_util
 
 # What model to download.
-MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
+MODEL_NAME = '/home/punk/data-picker/object_detection/ssd_mobilenet_v1_coco_11_06_2017'
 
 # Path to frozen detection graph. This is the actual model that is used for the object detection.
 PATH_TO_CKPT = os.path.join(MODEL_NAME, 'frozen_inference_graph.pb')
 
 # List of the strings that is used to add correct label for each box.
-PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
+PATH_TO_LABELS = os.path.join('/home/punk/data-picker/object_detection/data', 'mscoco_label_map.pbtxt')
 
 NUM_CLASSES = 90
 
@@ -93,7 +94,8 @@ with detection_graph.as_default():
 '''
 
 
-def detect_person(image_array):
+def detect_person(image):
+    print('start detection')
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
             image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
@@ -102,29 +104,25 @@ def detect_person(image_array):
             detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
             num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
-            # image; numpy array
-            for image in image_array:
-                pre_time = time.time()
-                image_np = np.expand_dims(image, axis=0)
+            pre_time = time.time()
+            image_np = np.expand_dims(image, axis=0)
 
-                (boxes, scores, classes, num) = sess.run(
-                    [detection_boxes, detection_scores, detection_classes, num_detections],
-                    feed_dict={image_tensor: image_np}
-                )
+            (boxes, scores, classes, num) = sess.run(
+                [detection_boxes, detection_scores, detection_classes, num_detections],
+                feed_dict={image_tensor: image_np}
+            )
 
-                boxes = np.squeeze(boxes)
-                scores = np.squeeze(scroes)
-                classes = np.squeeze(classes).astype(np.int32)
+            boxes = np.squeeze(boxes)
+            scores = np.squeeze(scores)
+            classes = np.squeeze(classes).astype(np.int32)
 
-                for i in range(num[0]):
-                    if scores[i] >= 0.5 and classes[i] == 1:
-                        vis_util.draw_bounding_box_on_image_array(
-                            image=image,
-                            ymin=boxes[i][0],
-                            xmin=boxes[i][1],
-                            ymax=boxes[i][2],
-                            xmax=boxes[i][3],
-                        )
+            ret = []
+            for i in range(int(num[0])):
+                if scores[i] >= 0.5 and classes[i] == 1:
+                    ymin = int(boxes[i][0] * image.shape[0])
+                    ymax = int(boxes[i][2] * image.shape[0])
+                    xmin = int(boxes[i][1] * image.shape[1])
+                    xmax = int(boxes[i][3] * image.shape[1])
+                    ret.append(image[ymin:ymax, xmin:xmax])
 
-                        print(score[i])
-                        print(boxes[i])
+            return ret

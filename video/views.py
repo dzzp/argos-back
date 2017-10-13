@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from video.models import Video
+from video.frame_worker import extract_video_frame_array
 from video.serializers import VideoSerializer, PersonSerializer
 from data_picker.tools import response_code
 
@@ -17,6 +18,7 @@ def detection(request):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
+        extract_video_frame_array([video['video_path']])
     return Response(response_code('processing_detect'))
 
 
