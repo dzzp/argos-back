@@ -9,6 +9,8 @@ class Video(models.Model):
     memo = models.TextField(blank=True)
     lat = models.FloatField(default=0.0)
     lng = models.FloatField(default=0.0)
+    total_frame = models.IntegerField(default=0)
+    frame_rate = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self._id)
@@ -20,6 +22,7 @@ class Person(models.Model):
     bbox_path = models.TextField()
     feature_path = models.TextField()
     time = models.DateTimeField()
+
 
 class TestVideo(models.Model):
     video = models.FileField(upload_to='assets/')

@@ -1,23 +1,50 @@
 import os
 import av
+import skvideo.io
 import numpy as np
 
+from video.models import Video
+from video.calculation import NumericStringParser
 from object_detection.main import detect_person 
 
-def extract_video_frame_array(file_list, interval=30):
-    print(file_list)
+
+_NUM_STR_PARSER = NumericStringParser()
+
+
+def calculate_string_exp(data):
+    return round(_NUM_STR_PARSER.eval(data))
+
+
+def extract_video_metadata(file_path):
+    video = skvideo.io.ffprobe(file_path)
+    video_obj = Video.objects.get(video_path=file_path)
+
+    metadata = {
+        'total_frame': int(video['video']['@nb_frames']),
+        'frame_rate': calculate_string_exp(video['video']['@avg_frame_rate']),
+    }
+
+    video_obj.total_frame = int(video['video']['@nb_frames'])
+    video_obj.frame_rate = calculate_string_exp(video['video']['@avg_frame_rate'])
+    video_obj.save()
+
+    return metadata
+
+
+def extract_video_frame_array(file_list):
     for file_path in file_list:
         file_name = os.path.basename(file_path)
         folder_path = os.path.dirname(os.path.abspath(file_path))
 
-        print(file_name)
-        print(folder_path)
         '''
         try:
             os.mkdir(full_path)
         except:
             print('Folder already exists..')
         '''
+        
+        metadata = extract_video_metadata(file_path)
+        interval = metadata['frame_rate']
 
         video = av.open(file_path)
         pass_count = 0
@@ -26,7 +53,7 @@ def extract_video_frame_array(file_list, interval=30):
                 img = frame.to_image()
                 arr = np.array(img)
                 ret = detect_person(arr)
-            # using detect function...
+                print(ret)
             pass_count += 1
 
 
