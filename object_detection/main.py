@@ -13,8 +13,6 @@ from collections import defaultdict
 from io import StringIO
 from PIL import Image
 
-# sys.path.append("/home/punk/data-picker/detection")
-# print(sys.path)
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
@@ -43,7 +41,6 @@ category_index = label_map_util.create_category_index(categories)
 
 
 def detect_person(image):
-    print('start detection')
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
             image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')

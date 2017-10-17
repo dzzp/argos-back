@@ -3,6 +3,8 @@ import av
 import skvideo.io
 import numpy as np
 
+from PIL import Image
+
 from video.models import Video
 from video.calculation import NumericStringParser
 from object_detection.main import detect_person 
@@ -31,30 +33,39 @@ def extract_video_metadata(file_path):
     return metadata
 
 
+def save_video_frame(file_path, frame, images, time):
+    origin_img = Image.fromarray(frame)
+    for image in images:
+        bbox_img = origin_img.crop(image)
+        bbox_img.save(file_path)
+
+
 def extract_video_frame_array(file_list):
     for file_path in file_list:
         file_name = os.path.basename(file_path)
         folder_path = os.path.dirname(os.path.abspath(file_path))
 
-        '''
         try:
             os.mkdir(full_path)
         except:
             print('Folder already exists..')
-        '''
         
         metadata = extract_video_metadata(file_path)
         interval = metadata['frame_rate']
 
         video = av.open(file_path)
         pass_count = 0
+        real_time = 0.0
+        int_time = 0
         for frame in video.decode(video=0):
-            if pass_count % interval == 0:
+            if int_time >= real_time:
+                int_time += 1
                 img = frame.to_image()
                 arr = np.array(img)
                 ret = detect_person(arr)
-                print(ret)
+                print(real_time)
             pass_count += 1
+            real_time = pass_count * interval
 
 
 def extract_video_frame_image(file_path, interval=30):
