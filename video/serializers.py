@@ -28,9 +28,7 @@ class VideoSerializer(serializers.ModelSerializer):
         file_ext = os.path.splitext(data['video_path'])
 
         if file_ext[-1] in file_types:
-            if self._is_exists(data['video_path']):
-                return data
-            else:
+            if not self._is_exists(data['video_path']):
                 raise serializers.ValidationError({
                     'message': 'File does not exist',
                     'video_path': data['video_path'],
@@ -41,11 +39,11 @@ class VideoSerializer(serializers.ModelSerializer):
                 'file_type': file_ext[-1],
             }, code='error')
 
-
     class Meta:
         model = Video
-        fields = ('video_path', 'time', 'memo', 'lat', 'lng',)
-        #validators = []
+        #fields = ('video_path', 'time', 'memo', 'lat', 'lng',)
+        fields = '__all__'
+        extra_kwargs = {'video_path': {'allow_files': True}}
 
 
 class PersonSerializer(serializers.ModelSerializer):

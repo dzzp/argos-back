@@ -1,10 +1,9 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
 
 
 class Video(models.Model):
     _id = models.AutoField(primary_key=True)
-    video_path = models.TextField(unique=True)
+    video_path = models.FilePathField(allow_files=True, path="/")
     time = models.DateTimeField()
     memo = models.TextField(blank=True)
     lat = models.FloatField(default=0.0)
@@ -19,9 +18,11 @@ class Video(models.Model):
 class Person(models.Model):
     _id = models.AutoField(primary_key=True)
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
-    bbox_path = models.TextField()
-    feature_path = models.TextField()
-    time = models.DateTimeField()
+    person_path = models.FilePathField()
+    feature_path = models.FilePathField()
+    score = models.FloatField()
+    frame_num = models.IntegerField()
+    time = models.DateTimeField(auto_now_add=True)
 
 
 class TestVideo(models.Model):

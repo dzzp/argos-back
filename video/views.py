@@ -17,9 +17,9 @@ def detection(request):
     for video in request.data['videos']:
         serializer = VideoSerializer(data=video)
         if not serializer.is_valid():
+            print(serializer)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        video_list.append(video['video_path'])
+        video_list.append(serializer.save())
     extract_video_frame_array(video_list)
     return Response(response_code('processing_detect'))
 
