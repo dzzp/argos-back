@@ -1,13 +1,36 @@
 from django.contrib import admin
-from video.models import Video, TestVideo
+from video.models import Video, Person, TestVideo
 
 
 class VideoAdmin(admin.ModelAdmin):
-    list_display = ('_id', 'video_path', 'time', 'lat', 'lng', 'total_frame', 'frame_rate')
+    list_display = (
+        '_id',
+        'video_path',
+        'memo',
+        'lat',
+        'lng',
+        'time',
+        'frame_rate',
+        'total_frame',
+        'hash_value',
+    )
+
+
+class PersonAdmin(admin.ModelAdmin):
+    list_display = (
+        '_id',
+        'video',
+        'person_path',
+        'feature_path',
+        'score',
+        'frame_num',
+        'time',
+    )
 
 
 class TestVideoAdmin(admin.ModelAdmin):
     list_display = ('video',)
 
 admin.site.register(Video, VideoAdmin)
+admin.site.register(Person, PersonAdmin)
 admin.site.register(TestVideo, TestVideoAdmin)

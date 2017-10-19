@@ -16,7 +16,7 @@ class VideoSerializer(serializers.ModelSerializer):
     @property
     def errors(self):
         ret = super(serializers.Serializer, self).errors
-        if isinstance(ret, list) and len(ret) ==1 and getattr(ret[0], 'code', None) =='null':
+        if isinstance(ret, list) and len(ret) == 1 and getattr(ret[0], 'code', None) =='null':
             detail = ErrorDetail('No data provided', code='null')
             ret = {api_settings.NON_FIELD_ERRORS_KEY: detail}
         for key, value in ret.items():
@@ -38,12 +38,11 @@ class VideoSerializer(serializers.ModelSerializer):
                 'message': 'Filetype error occured',
                 'file_type': file_ext[-1],
             }, code='error')
+        return data
 
     class Meta:
         model = Video
-        #fields = ('video_path', 'time', 'memo', 'lat', 'lng',)
-        fields = '__all__'
-        extra_kwargs = {'video_path': {'allow_files': True}}
+        fields = ('video_path', 'time', 'memo', 'lat', 'lng',)
 
 
 class PersonSerializer(serializers.ModelSerializer):
