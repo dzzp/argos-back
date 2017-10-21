@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from video.models import Video, Person
+from video.serializers import PersonSerializer
 from video.calculation import NumericStringParser
 from object_detection.main import detect_person 
 
@@ -35,7 +36,6 @@ def extract_video_metadata(hash_value):
 
 
 def save_video_frame(hash_value, frames, bbox_list):
-    idx = 0
     video = Video.objects.get(hash_value=hash_value)
     file_path = os.path.join(
         os.path.dirname(os.path.abspath(video.video_path)),
@@ -44,6 +44,9 @@ def save_video_frame(hash_value, frames, bbox_list):
             os.path.splitext(os.path.basename(video.video_path))[0]
         )
     )
+    person_list = []
+
+    idx = 0
 
     for frame_idx in range(len(frames)):
         origin_img = Image.fromarray(frames[frame_idx])
@@ -64,17 +67,19 @@ def save_video_frame(hash_value, frames, bbox_list):
             draw.rectangle(bbox, outline='red')
 
             img_idx += 1
+            
+            person_list.append({
+                'person_path': person_name,
+                'feature_path': feature_name,
+                'score': score,
+                'frame_num': video.frame_rate*frame_idx,
+                'time': '2017-10-10T22:31',
+                'video': video,
+            })
 
-            Person.objects.create(
-                person_path=person_name,
-                feature_path=feature_name,
-                score=score,
-                frame_num=video.frame_rate*frame_idx,
-                time='2015-02-10T21:30',
-                video=video,
-            )
             origin_img.save(os.path.join(file_path, 'origin', '%d.jpg' % idx))
         idx += 1
+    return person_list
 
 
 def extract_video_frame_array(videos):
@@ -105,4 +110,6 @@ def extract_video_frame_array(videos):
                 arr.append(np.array(img))
             pass_count += 1
         ret = detect_person(arr)
-        save_video_frame(metadata['hash_value'], arr, ret)
+        person_list = save_video_frame(metadata['hash_value'], arr, ret)
+
+        return PersonSerializer(person_list)

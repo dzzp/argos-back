@@ -45,7 +45,26 @@ class VideoSerializer(serializers.ModelSerializer):
         fields = ('video_path', 'time', 'memo', 'lat', 'lng',)
 
 
+'''
 class PersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
-        fields = ('video', 'bbox_path', 'feature_path', 'time',)
+        fields = ('video', 'person_path', 'feature_path', 'score', 'frame_num', 'time',)
+'''
+
+class PersonSerializer:
+    _person_list = []
+
+    def __init__(self, person_data):
+        for person in person_data:
+            _person_list.append(Person.objects.create(
+                video=person['video'],
+                person_path=person['person_path'],
+                feature_path=person['feature_path'],
+                score=person['score'],
+                frame_num=person['frame_num'],
+                time=person['time'],
+            ))
+
+    def getPersonList(self):
+        return _person_list

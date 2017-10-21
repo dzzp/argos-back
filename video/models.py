@@ -27,6 +27,7 @@ class Video(models.Model):
 
 class Person(models.Model):
     _id = models.AutoField(primary_key=True)
+    hash_value = models.CharField(max_length=7, default=_generateHash, unique=True)
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
     person_path = models.FilePathField()
     feature_path = models.FilePathField()
