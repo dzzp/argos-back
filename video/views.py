@@ -20,6 +20,8 @@ def detection(request):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         video_list.append(serializer.save())
     person_list = extract_video_frame_array(video_list)
+    #print(person_list.getPersonList())
+
     return Response(response_code('processing_detect'))
 
 

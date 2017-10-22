@@ -57,7 +57,7 @@ class PersonSerializer:
 
     def __init__(self, person_data):
         for person in person_data:
-            _person_list.append(Person.objects.create(
+            self._person_list.append(Person.objects.create(
                 video=person['video'],
                 person_path=person['person_path'],
                 feature_path=person['feature_path'],
@@ -67,4 +67,22 @@ class PersonSerializer:
             ))
 
     def getPersonList(self):
-        return _person_list
+        result = dict()
+        result['code'] ='detect_response'
+        result['videos'] = list()
+
+        for person in self._person_list:
+            video = person.video
+            data = {
+                'lat': video.lat,
+                'lng': video.lng,
+                'path': video.video_path,
+                'memo': video.memo,
+            }
+
+            data['imgs'] = list()
+            
+
+            result['videos'].append()
+
+        return result
