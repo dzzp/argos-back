@@ -50,6 +50,7 @@ class PersonSerializer:
         self._person_list = dict()
 
         for person in person_data:
+<<<<<<< HEAD
             if not person.time in self._person_list:
                 self._person_list[person.time] = list()
             else:
