@@ -50,7 +50,6 @@ class PersonSerializer:
         self._person_list = dict()
 
         for person in person_data:
-<<<<<<< HEAD
             if not person.time in self._person_list:
                 self._person_list[person.time] = list()
             else:
@@ -74,7 +73,17 @@ class PersonSerializer:
         video['memo'] = self._video.memo
         video['imgs'] = []
 
-        img = dict()
         for time in _person_list:
-            print(time)
-        #return video
+            img = dict()
+            img['persons'] = list()
+            for person in _person_list[time]:
+                data = {
+                    'bbox_img': person.person_path
+                    'person_idx': person.hash_value
+                }
+
+                img['persons'].append(data)
+            img['time'] = person.time
+            video['imgs'].append(img)
+
+        return video

@@ -83,7 +83,7 @@ def save_video_frame(hash_value, frames, bbox_list):
 
 
 def extract_video_frame_array(videos):
-    person_serializer = []
+    serialized_videos = []
     for video in videos:
         file_path = video.video_path
         file_name = os.path.basename(file_path)
@@ -110,8 +110,10 @@ def extract_video_frame_array(videos):
                 img = frame.to_image()
                 arr.append(np.array(img))
             pass_count += 1
+
         ret = detect_person(arr)
         person_list = save_video_frame(metadata['hash_value'], arr, ret)
-
-        person_serializer.append(PersonSerializer(person_list))
-    return person_serializer
+        serialized_videos.append(
+            PersonSerializer(person_list).getPersonList()
+        )
+    return serialized_videos
