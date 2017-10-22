@@ -17,8 +17,8 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
 # What model to download.
-MODEL_NAME = settings.BASE_DIR + '/object_detection/ssd_mobilenet_v1_coco_11_06_2017'
-#MODEL_NAME = settings.BASE_DIR + '/object_detection/faster_rcnn_resnet101_coco_11_06_2017'
+#MODEL_NAME = settings.BASE_DIR + '/object_detection/ssd_mobilenet_v1_coco_11_06_2017'
+MODEL_NAME = settings.BASE_DIR + '/object_detection/faster_rcnn_resnet101_coco_11_06_2017'
 
 # Path to frozen detection graph. This is the actual model that is used for the object detection.
 PATH_TO_CKPT = os.path.join(MODEL_NAME, 'frozen_inference_graph.pb')

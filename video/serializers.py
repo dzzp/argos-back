@@ -45,26 +45,35 @@ class VideoSerializer(serializers.ModelSerializer):
         fields = ('video_path', 'time', 'memo', 'lat', 'lng',)
 
 
-'''
-class PersonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Person
-        fields = ('video', 'person_path', 'feature_path', 'score', 'frame_num', 'time',)
-'''
-
 class PersonSerializer:
-    _person_list = []
-
     def __init__(self, person_data):
+        self._person_list = dict()
+
         for person in person_data:
-            _person_list.append(Person.objects.create(
-                video=person['video'],
-                person_path=person['person_path'],
-                feature_path=person['feature_path'],
-                score=person['score'],
-                frame_num=person['frame_num'],
-                time=person['time'],
-            ))
+            if not person.time in self._person_list:
+                self._person_list[person.time] = list()
+            else:
+                self._person_list[person.time].append(Person.objects.create(
+                    video=self._video,
+                    person_path=person['person_path'],
+                    feature_path=person['feature_path'],
+                    score=person['score'],
+                    frame_num=person['frame_num'],
+                    time=person['time'],
+                ))
+
+        self._video = person.video
 
     def getPersonList(self):
-        return _person_list
+        video = dict()
+
+        video['lat'] = self._video.lat
+        video['lng'] = self._video.lng
+        video['path'] = self._video.video_path
+        video['memo'] = self._video.memo
+        video['imgs'] = []
+
+        img = dict()
+        for time in _person_list:
+            print(time)
+        #return video
