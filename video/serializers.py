@@ -46,15 +46,17 @@ class VideoSerializer(serializers.ModelSerializer):
 
 
 class PersonSerializer:
+    _video = None
+    _person_list = None
     def __init__(self, person_data):
         self._person_list = dict()
 
         for person in person_data:
-            if not person.time in self._person_list:
-                self._person_list[person.time] = list()
+            if not person['time'] in self._person_list:
+                self._person_list[person['time']] = list()
             else:
-                self._person_list[person.time].append(Person.objects.create(
-                    video=self._video,
+                self._person_list[person['time']].append(Person.objects.create(
+                    video=person['video'],
                     person_path=person['person_path'],
                     feature_path=person['feature_path'],
                     score=person['score'],
@@ -62,7 +64,7 @@ class PersonSerializer:
                     time=person['time'],
                 ))
 
-        self._video = person.video
+        self._video = person['video']
 
     def getPersonList(self):
         video = dict()
@@ -73,17 +75,17 @@ class PersonSerializer:
         video['memo'] = self._video.memo
         video['imgs'] = []
 
-        for time in _person_list:
+        for time in self._person_list:
             img = dict()
             img['persons'] = list()
-            for person in _person_list[time]:
+            for person in self._person_list[time]:
                 data = {
-                    'bbox_img': person.person_path
+                    'bbox_img': person.person_path,
                     'person_idx': person.hash_value
                 }
 
                 img['persons'].append(data)
-            img['time'] = person.time
+            img['time'] = str(person.time)
             video['imgs'].append(img)
 
         return video
