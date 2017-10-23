@@ -4,6 +4,7 @@ import skvideo.io
 import numpy as np
 
 from PIL import Image, ImageDraw
+from datetime import timedelta
 
 from video.models import Video, Person
 from video.serializers import PersonSerializer
@@ -67,13 +68,14 @@ def save_video_frame(hash_value, frames, bbox_list):
             draw.rectangle(bbox, outline='red')
 
             img_idx += 1
-            
+            shot_time = video.time + timedelta(seconds=frame_idx)
+
             person_list.append({
                 'person_path': person_name,
                 'feature_path': feature_name,
                 'score': score,
                 'frame_num': video.frame_rate*frame_idx,
-                'time': '2017-10-10T22:31',
+                'time': str(shot_time),
                 'video': video,
             })
 

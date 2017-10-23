@@ -74,18 +74,17 @@ class PersonSerializer:
         video['path'] = self._video.video_path
         video['memo'] = self._video.memo
         video['imgs'] = []
-
         for time in self._person_list:
-            img = dict()
-            img['persons'] = list()
-            for person in self._person_list[time]:
-                data = {
-                    'bbox_img': person.person_path,
-                    'person_idx': person.hash_value
-                }
+            if len(Person.objects.filter(time=time)) > 0:
+                img = dict()
+                img['persons'] = list()
+                for person in self._person_list[time]:
+                    data = {
+                        'bbox_img': person.person_path,
+                        'person_idx': person.hash_value
+                    }
 
-                img['persons'].append(data)
-            img['time'] = str(person.time)
-            video['imgs'].append(img)
-
+                    img['persons'].append(data)
+                img['time'] = str(time)
+                video['imgs'].append(img)
         return video

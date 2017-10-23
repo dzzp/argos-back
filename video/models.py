@@ -33,7 +33,7 @@ class Person(models.Model):
     feature_path = models.FilePathField()
     score = models.FloatField()
     frame_num = models.IntegerField()
-    time = models.DateTimeField(auto_now_add=True)
+    time = models.DateTimeField(auto_now_add=False)
 
     def __str__(self):
         return str(self._id)
