@@ -38,7 +38,7 @@ def probe(request):
     return Response(json.dumps({"code": "ok"}))
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def processing(request):
     if request.data['code'] == 'is_detect':
         #group = request.data['video_group_hash']

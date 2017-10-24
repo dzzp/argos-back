@@ -87,6 +87,7 @@ def save_video_frame(hash_value, frames, bbox_list):
 def extract_video_frame_array(videos):
     load = LoadList.objects.all()[0]
     load.total = len(videos)
+    load.current = 0
     load.save()
     serialized_videos = []
     for video in videos:
