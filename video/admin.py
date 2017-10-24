@@ -1,5 +1,5 @@
 from django.contrib import admin
-from video.models import Video, Person, TestVideo
+from video.models import Video, Person, TestVideo, LoadList
 
 
 class VideoAdmin(admin.ModelAdmin):
@@ -31,6 +31,13 @@ class PersonAdmin(admin.ModelAdmin):
 class TestVideoAdmin(admin.ModelAdmin):
     list_display = ('video',)
 
+
+class LoadListAdmin(admin.ModelAdmin):
+    list_display = ('video', 'current', 'total',)
+
+
 admin.site.register(Video, VideoAdmin)
 admin.site.register(Person, PersonAdmin)
 admin.site.register(TestVideo, TestVideoAdmin)
+
+admin.site.register(LoadList, LoadListAdmin)

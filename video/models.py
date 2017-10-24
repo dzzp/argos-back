@@ -2,12 +2,18 @@ import time
 import hashlib
 
 from django.db import models
-
+from django.contrib.postgres.fields import ArrayField
 
 def _generateHash():
      now = str(time.time()).encode('utf-8')
      hash_value = hashlib.sha1(now)
      return hash_value.hexdigest()[:7]
+
+
+class VideoGroup(models.Model):
+    _id = models.AutoField(primary_key=True)
+    video_hash_list = ArrayField(models.CharField(max_length=7))
+    group_hash_id = models.CharField(max_length=8, default=_generateHash, unique=True)
 
 
 class Video(models.Model):
@@ -20,6 +26,7 @@ class Video(models.Model):
     lng = models.FloatField(default=0.0)
     total_frame = models.IntegerField(default=0)
     frame_rate = models.IntegerField(default=0)
+    is_detect_done = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.hash_value)
@@ -41,3 +48,12 @@ class Person(models.Model):
 
 class TestVideo(models.Model):
     video = models.FileField(upload_to='assets/')
+
+
+class LoadList(models.Model):
+    video = models.CharField(max_length=100, default='none')
+    total = models.IntegerField(default=0)
+    current = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.video)

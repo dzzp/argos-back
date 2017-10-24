@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 from datetime import timedelta
 
-from video.models import Video, Person
+from video.models import Video, Person, LoadList
 from video.serializers import PersonSerializer
 from video.calculation import NumericStringParser
 from object_detection.main import detect_person 
@@ -85,8 +85,14 @@ def save_video_frame(hash_value, frames, bbox_list):
 
 
 def extract_video_frame_array(videos):
+    load = LoadList.objects.all()[0]
+    load.total = len(videos)
+    load.save()
     serialized_videos = []
     for video in videos:
+        load.video = video.video_path
+        load.current = load.current + 1
+        load.save()
         file_path = video.video_path
         file_name = os.path.basename(file_path)
         folder_name = '%s_%s' % (video.hash_value, os.path.splitext(file_name)[0])
@@ -118,4 +124,6 @@ def extract_video_frame_array(videos):
         serialized_videos.append(
             PersonSerializer(person_list).getPersonList()
         )
+        video.is_detect_done = True
+        video.save()
     return serialized_videos
