@@ -22,6 +22,7 @@ from video import views
 urlpatterns = [
     url(r'^detection/$', views.detection, name='detection'),
     #url(r'^reid/$', reid, name='reid'),
+    url(r'^probe/$', views.probe, name='probe'),
     url(r'^processing/$', views.processing, name='processing'),
     url(r'^admin/', admin.site.urls),
 ]

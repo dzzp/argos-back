@@ -8,6 +8,7 @@ from datetime import timedelta
 
 from video.models import Video, Person, LoadList
 from video.serializers import PersonSerializer
+from video.probe_worker import feature_extract
 from video.calculation import NumericStringParser
 from object_detection.main import detect_person 
 
@@ -125,6 +126,7 @@ def extract_video_frame_array(videos):
         serialized_videos.append(
             PersonSerializer(person_list).getPersonList()
         )
+        feature_extract(full_path)
         video.is_detect_done = True
         video.save()
     return serialized_videos

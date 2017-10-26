@@ -9,7 +9,6 @@ from rest_framework.decorators import api_view
 
 from video.models import VideoGroup, Video, LoadList
 from video.frame_worker import extract_video_frame_array
-from video.probe_worker import executing_probe
 from video.serializers import VideoSerializer, PersonSerializer
 from data_picker.tools import response_code, response_detect
 
