@@ -72,4 +72,5 @@ def detect_person(images):
                         #ret.append(image[ymin:ymax, xmin:xmax])
                         img_ret.append(([xmin, ymin, xmax, ymax], scores[i]))
                 ret.append(img_ret)
-            return ret
+            #return ret
+    return ret
