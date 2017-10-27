@@ -17,8 +17,8 @@ _CAFFE_CMD = os.path.join(_CAFFE_PATH, 'build/tools/extract_features')
 _SPINDLE_PATH = os.path.join(settings.BASE_DIR, 'SpindleNet')
 _SPINDLE_MODEL = os.path.join(_SPINDLE_PATH, 'spindlenet_iter_50000.caffemodel')
 
-#_RPN_PATH = os.path.join(settings.BASE_DIR, 'RPN')
 _RPN_PATH = os.path.join(_BASE_DIR, 'RPN')
+#_RPN_PATH = os.path.join(setttings._BASE_DIR, 'RPN')
 _RPN_INF_CMD = 'python ' + _RPN_PATH + '/inference.py'
 _RPN_PROTO_PATH = os.path.join(_RPN_PATH, 'spindlenet_test.prototxt')
 
@@ -27,7 +27,7 @@ _CONVERT_CMD = 'python ' + _RPN_PATH + '/convert_lmdb_to_numpy.py'
 
 def feature_extract(video_path):
     after_rpn = 'after_rpn.txt'
-    feature_path = os.path.join(video_path, 'feat') + '/features.npy'
+    feature_path = os.path.join(video_path, 'feat', 'features.npy')
 
     with open('file_list.txt', 'w') as f:
         f_names = glob(os.path.join(video_path, 'bbox', '*'))
@@ -41,8 +41,8 @@ def feature_extract(video_path):
               caffe_cmd=_CAFFE_CMD,
               spindle_model=_SPINDLE_MODEL,
               rpn_proto= _RPN_PROTO_PATH,
-              feature_lmdb=os.path.join(_RPN_PATH, '/features_lmdb'),
-              label_lmdb=os.path.join(_RPN_PATH, '/label_lmdb'),
+              feature_lmdb=os.path.join(_RPN_PATH, 'features_lmdb'),
+              label_lmdb=os.path.join(_RPN_PATH, 'label_lmdb'),
               iter_len=iter_len
         ), shell=True
     )
