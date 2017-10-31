@@ -2,16 +2,17 @@ import os
 import av
 import skvideo.io
 import numpy as np
+import multiprocessing
 
 from PIL import Image, ImageDraw
 from datetime import timedelta
 
 from video.models import Video, Person, LoadList
 from video.serializers import PersonSerializer
-from video.probe_worker import feature_extract
 from video.calculation import NumericStringParser
 from object_detection.main import detect_person 
 
+from video.probe_worker import feature_extract
 
 _NUM_STR_PARSER = NumericStringParser()
 
@@ -121,7 +122,12 @@ def extract_video_frame_array(videos):
                 arr.append(np.array(img))
             pass_count += 1
 
-        ret = detect_person(arr)
+        mpq = multiprocessing.Queue()
+        mpp = multiprocessing.Process(target=detect_person, args=(arr, mpq))
+        mpp.start()
+        mpp.join()
+        ret = mpq.get()
+        
         person_list = save_video_frame(metadata['hash_value'], arr, ret)
         serialized_videos.append(
             PersonSerializer(person_list).getPersonList()

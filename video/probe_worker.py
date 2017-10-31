@@ -47,4 +47,20 @@ def feature_extract(video_path):
         ), shell=True
     )
 
-    subprocess.call(_CONVERT_CMD + ' ' + _RPN_PATH + '/features_lmdb ' + feature_path, shell=True)
+    subprocess.call(
+        '{convert_cmd} {feature_lmdb} {feature_path}'.format(
+            convert_cmd=_CONVERT_CMD,
+            feature_lmdb=os.path.join(_RPN_PATH, 'features_lmdb'),
+            feature_path=feature_path
+        ), shell=True
+    )
+    subprocess.call(
+        'rm -rf {feature_lmdb}'.format(
+            feature_lmdb=os.path.join(_RPN_PATH, 'features_lmdb')
+        ), shell=True
+    )
+    subprocess.call(
+        'rm -rf {label_lmdb}'.format(
+            label_lmdb=os.path.join(_RPN_PATH, 'label_lmdb')
+        ), shell=True
+    )

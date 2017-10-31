@@ -1,5 +1,6 @@
+import os
 import json
-
+import multiprocessing
 from django.http import HttpResponse
 from django.shortcuts import render
 
@@ -9,6 +10,7 @@ from rest_framework.decorators import api_view
 
 from video.models import VideoGroup, Video, LoadList
 from video.frame_worker import extract_video_frame_array
+from video.probe_worker import feature_extract 
 from video.serializers import VideoSerializer, PersonSerializer
 from data_picker.tools import response_code, response_detect
 
@@ -20,20 +22,39 @@ def detection(request):
     for video in request.data['videos']:
         serializer = VideoSerializer(data=video)
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
         video_obj = serializer.save()
         video_list.append(video_obj)
         video_hash_list.append(video_obj.hash_value)
+
+    '''
+    result = multiprocessing.Queue()
+    proc = multiprocessing.Process(target=extract_video_frame_array, args=(video_list, result))
+    proc.start()
+    proc.join()
+    serialized_videos = result.get()
+    '''
+
     serialized_videos = extract_video_frame_array(video_list)
-    #VideoGroup.objects.create(video_hash_list=video_hash_list)
+    video_group = VideoGroup.objects.create(video_hash_list=video_hash_list)
     
-    return Response(response_detect(serialized_videos))
+    return Response(
+        response_detect(serialized_videos, video_group.group_hash_id)
+    )
 
 
 @api_view(['POST'])
 def probe(request):
-    person_list = request.data['persons']
-    executing_probe(person_list)
+    group_id = request.data['group_id']
+    video_group = VideoGroup.objects.get(group_hash_id=group_id)
+    video_list = video_group.video_hash_list
+    for video in video_list:
+        temp = Video.objects.get(hash_value=video)
+        temp_path = temp.video_path 
+        feature_extract(os.path.join(temp_path, 'bbox'))
     return Response(json.dumps({"code": "ok"}))
 
 

@@ -21,7 +21,7 @@ def response_code(code, is_json=True):
     return result
 
 
-def response_detect(video_list):
+def response_detect(video_list, group_id):
     result = {
         'code': 'detect_response',
         'videos': video_list
