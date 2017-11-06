@@ -10,17 +10,20 @@ def _generateHash():
      return hash_value.hexdigest()[:7]
 
 
-class VideoGroup(models.Model):
+class Case(models.Model):
     _id = models.AutoField(primary_key=True)
+    case_title = models.CharField(max_length=50, blank=True)
     video_hash_list = ArrayField(models.CharField(max_length=7))
     group_hash_id = models.CharField(max_length=8, default=_generateHash, unique=True)
+    generated_datetime = models.DateTimeField(blank=True)
+    memo = models.TextField(blank=True)
 
 
 class Video(models.Model):
     _id = models.AutoField(primary_key=True)
     hash_value = models.CharField(max_length=7, default=_generateHash, unique=True)
     video_path = models.TextField()
-    time = models.DateTimeField()
+    time = models.DateTimeField(blank=True)
     memo = models.TextField(blank=True)
     lat = models.FloatField(default=0.0)
     lng = models.FloatField(default=0.0)
@@ -40,7 +43,8 @@ class Person(models.Model):
     feature_path = models.FilePathField()
     score = models.FloatField()
     frame_num = models.IntegerField()
-    time = models.DateTimeField(auto_now_add=False)
+    shot_datetime = models.DateTimeField(auto_now_add=False)
+    probe_value = models.FloatField(default=0.0)
 
     def __str__(self):
         return str(self._id)

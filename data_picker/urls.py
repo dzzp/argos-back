@@ -20,9 +20,13 @@ from video import views
 
 
 urlpatterns = [
-    url(r'^detection/$', views.detection, name='detection'),
+    url(r'^cases/$', views.cases, name='cases'),
+    url(r'^cases/([a-z]{3,}-[a-z]{3,}-[0-9]{1,4})/videos/$', views.cases_hash_videos, name='cases_hash_videos'),
+    url(r'^cases/([a-z]{3,}-[a-z]{3,}-[0-9]{1,4})/probes/$', views.cases_hash_probes, name='cases_hash_probes'),
+    url(r'^cases/([a-z]{3,}-[a-z]{3,}-[0-9]{1,4})/galleries/$', views.cases_hash_galleries, name='cases_hash_galleries'),
+    #url(r'^detection/$', views.detection, name='detection'),
     #url(r'^reid/$', reid, name='reid'),
-    url(r'^probe/$', views.probe, name='probe'),
+    #url(r'^probe/$', views.probe, name='probe'),
     url(r'^processing/$', views.processing, name='processing'),
     url(r'^admin/', admin.site.urls),
 ]
