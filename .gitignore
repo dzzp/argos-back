@@ -113,3 +113,6 @@ pw.txt
 backup/
 ssd_mobilenet_v1_coco_11_06_2017/
 faster_rcnn_resnet101_coco_11_06_2017/
+
+after_rpn.txt
+file_list.txt
