@@ -17,8 +17,7 @@ _CAFFE_CMD = os.path.join(_CAFFE_PATH, 'build/tools/extract_features')
 _SPINDLE_PATH = os.path.join(settings.BASE_DIR, 'SpindleNet')
 _SPINDLE_MODEL = os.path.join(_SPINDLE_PATH, 'spindlenet_iter_50000.caffemodel')
 
-_RPN_PATH = os.path.join(_BASE_DIR, 'RPN')
-#_RPN_PATH = os.path.join(setttings._BASE_DIR, 'RPN')
+_RPN_PATH = os.path.join(settings.BASE_DIR, 'RPN')
 _RPN_INF_CMD = 'python ' + _RPN_PATH + '/inference.py'
 _RPN_PROTO_PATH = os.path.join(_RPN_PATH, 'spindlenet_test.prototxt')
 
