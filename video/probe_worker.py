@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import numpy as np
 
@@ -24,12 +25,19 @@ _RPN_PROTO_PATH = os.path.join(_RPN_PATH, 'spindlenet_test.prototxt')
 _CONVERT_CMD = 'python ' + _RPN_PATH + '/convert_lmdb_to_numpy.py'
 
 
+def numericalSort(value):
+    numbers = re.compile(r'(\d+)')
+    parts = numbers.split(value)
+    parts[1::2] = map(int, parts[1::2])
+    return parts
+
+
 def feature_extract(video_path):
     after_rpn = 'after_rpn.txt'
     feature_path = os.path.join(video_path, 'feat', 'features.npy')
 
     with open('file_list.txt', 'w') as f:
-        f_names = glob(os.path.join(video_path, 'bbox', '*'))
+        f_names = sorted(glob(os.path.join(video_path, 'bbox', '*')), key=numericalSort)
         iter_len = (len(f_names) + _BATCH_SIZE - 1) // _BATCH_SIZE
         for f_name in f_names:
             f.write('%s 0\n' % f_name)
