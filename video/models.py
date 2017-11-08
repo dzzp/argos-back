@@ -15,7 +15,7 @@ class Case(models.Model):
     case_title = models.CharField(max_length=50, blank=True)
     video_hash_list = ArrayField(models.CharField(max_length=7))
     group_hash_id = models.CharField(max_length=8, default=_generateHash, unique=True)
-    generated_datetime = models.DateTimeField(blank=True)
+    generated_datetime = models.DateTimeField(auto_now_add=False)
     memo = models.TextField(blank=True)
 
 
