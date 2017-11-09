@@ -1,8 +1,11 @@
 import os
 import json
+import numpy as np
 import multiprocessing
 from django.http import HttpResponse
 from django.shortcuts import render
+
+from annoy import AnnoyIndex
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -21,7 +24,7 @@ def cases(request):
     if request.method == 'GET':
         search_query = request.query_params.get('search')
         if search_query is None:
-            return Reponse()
+            return Response()
 
         cases = Case.objects.filter(case_title=search_query)
         result = dict()
@@ -38,7 +41,7 @@ def cases(request):
     # POST
     else:
         case = Case.objects.create(
-            title=request.data['title'],
+            case_title=request.data['title'],
             memo=request.data['memo'],
             generated_datetime=request.data['datetime'],
         )
@@ -49,53 +52,59 @@ def cases(request):
             'hash': case.group_hash_id,
         }))
 
+
 @api_view(['GET', 'POST'])
 def cases_hash_videos(request, case_hash):
     # GET
     if request.method == 'GET':
         try:
             case = Case.objects.get(group_hash_id=case_hash)
-            result = dict()
-            result['videos'] = []
-            for video_hash in case.video_hash_list:
-                video = Video.objects.get(hash_value=video_hash)
-                data = {
-                    'path': video.video_path,
-                    'hash': video.hash_value,
-                    'imgs': []
-                }
-
-                person_list = Person.objects.filter(video=video).order_by('shot_datetime')
-                shot_datetime_list = set()
-                for person in person_list:
-                    shot_datetime_list.add(person.shot_datetime)
-                for shot_datetime in shot_datetime_list:
-                    person_list = Person.objects.filter(shot_datetime=shot_datetime)
-
-                    person_data = dict()
-                    person_data['datetime'] = shot_datetime
-                    person_data['persons'] = []
-
-                    for person in person_list:
-                        person_data['persons'].append({
-                            'hash': person.hash_value,
-                            'bbox_path': person.person_path,
-                            'orig_path': 'temp',
-                        })
-                    data['imgs'].append(person_data)
-                result['videos'].append(data)
-            return Response(json.dumps(result))
-
         except:
-            return Response()
+            return Response(json.dumps({'error': 'error'}))
+        result = dict()
+        result['videos'] = []
+        for video_hash in case.video_hash_list:
+            video = Video.objects.get(hash_value=video_hash)
+            data = {
+                'path': video.video_path,
+                'hash': video.hash_value,
+                'imgs': []
+            }
+            person_list = Person.objects.filter(video=video).order_by('shot_datetime')
+            shot_datetime_list = set()
+            for person in person_list:
+                shot_datetime_list.add(person.shot_datetime)
+            for shot_datetime in shot_datetime_list:
+                person_list = Person.objects.filter(shot_datetime=shot_datetime)
+
+                person_data = dict()
+                person_data['datetime'] = shot_datetime
+                person_data['persons'] = []
+                for person in person_list:
+                    person_data['persons'].append({
+                        'hash': person.hash_value,
+                        'bbox_path': person.person_path,
+                        'orig_path': 'temp',
+                    })
+                data['imgs'].append(person_data)
+            result['videos'].append(data)
+        return Response(json.dumps(result))
 
     # POST
     else:
+        case = Case.objects.get(group_hash_id=case_hash)
+
+        video_list = []
+        video_hash_list = []
         for video in request.data['videos']:
-            Video.objects.create(
+            video_obj = Video.objects.create(
                 video_path=video['path'],
                 memo=video['memo']
             )
+            video_list.append(video_obj)
+            video_hash_list.append(video_obj.hash_value)
+        case.video_hash_list = video_hash_list
+        extract_video_frame_array(video_list)
         return Response(json.dumps({'code': 'ok'}))
 
 
@@ -127,6 +136,11 @@ def cases_hash_probes(request, case_hash):
         person_hash_list = request.data['persons']
         for person_hash in person_hash_list:
             person = Person.objects.get(hash_value=person_hash)
+            base_path = os.path.dirname(person.person_path)
+            feat_path = os.path.join(base_path, 'feat')
+            feature_file = np.load(os.path.join(feat_path, 'feature.npy'))
+            print(feature_file)
+
         return Response(json.dumps({'code': 'ok'}))
 
 
@@ -146,7 +160,7 @@ def cases_hash_galleries(request, case_hash):
                 'person_hash': person.hash_value,
                 'video_hash': video.hash_value,
                 'bbox_path': person.person_path,
-                'orig_pash': 'temp',
+                'orig_path': 'temp',
             })
 
         return Response(json.dumps(result))

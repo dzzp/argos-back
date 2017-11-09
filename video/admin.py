@@ -37,7 +37,7 @@ class PersonAdmin(admin.ModelAdmin):
         'feature_path',
         'score',
         'frame_num',
-        'shot_datetime',
+        'shot_time',
         'probe_value',
     )
 

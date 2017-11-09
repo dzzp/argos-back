@@ -1,11 +1,11 @@
 import os
 import av
+import datetime
 import skvideo.io
 import numpy as np
 import multiprocessing
 
 from PIL import Image, ImageDraw
-from datetime import timedelta
 
 from video.models import Video, Person, LoadList
 from video.serializers import PersonSerializer
@@ -13,6 +13,7 @@ from video.calculation import NumericStringParser
 from object_detection.main import detect_person 
 
 from video.probe_worker import feature_extract
+
 
 _NUM_STR_PARSER = NumericStringParser()
 
@@ -70,14 +71,15 @@ def save_video_frame(hash_value, frames, bbox_list):
             draw.rectangle(bbox, outline='red')
 
             img_idx += 1
-            shot_time = video.time + timedelta(seconds=frame_idx)
+            #shot_time = video.time + timedelta(seconds=frame_idx)
+            shot_time = ((datetime.datetime.combine(datetime.date(1, 1, 1), video.time) + datetime.timedelta(seconds=frame_idx)).time())
 
             person_list.append({
                 'person_path': person_name,
                 'feature_path': feature_name,
                 'score': score,
                 'frame_num': video.frame_rate*frame_idx,
-                'time': str(shot_time),
+                'shot_time': str(shot_time),
                 'video': video,
             })
 
