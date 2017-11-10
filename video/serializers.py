@@ -48,20 +48,21 @@ class VideoSerializer(serializers.ModelSerializer):
 class PersonSerializer:
     _video = None
     _person_list = None
+
     def __init__(self, person_data):
         self._person_list = dict()
 
         for person in person_data:
-            if not person['time'] in self._person_list:
-                self._person_list[person['time']] = list()
+            if not person['shot_time'] in self._person_list:
+                self._person_list[person['shot_time']] = list()
             else:
-                self._person_list[person['time']].append(Person.objects.create(
+                self._person_list[person['shot_time']].append(Person.objects.create(
                     video=person['video'],
                     person_path=person['person_path'],
                     feature_path=person['feature_path'],
                     score=person['score'],
                     frame_num=person['frame_num'],
-                    time=person['time'],
+                    shot_time=person['shot_time'],
                 ))
 
         self._video = person['video']
@@ -75,7 +76,7 @@ class PersonSerializer:
         video['memo'] = self._video.memo
         video['imgs'] = []
         for time in self._person_list:
-            if len(Person.objects.filter(time=time)) > 0:
+            if len(Person.objects.filter(shot_time=time)) > 0:
                 img = dict()
                 img['persons'] = list()
                 for person in self._person_list[time]:
