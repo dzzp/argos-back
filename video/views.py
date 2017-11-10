@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from video.models import Case, Video, LoadList
+from video.models import Case, Video, Person, LoadList
 from video.frame_worker import extract_video_frame_array
 from video.probe_worker import feature_extract 
 from video.serializers import VideoSerializer, PersonSerializer
@@ -70,15 +70,12 @@ def cases_hash_videos(request, case_hash):
                 'hash': video.hash_value,
                 'imgs': []
             }
-            person_list = Person.objects.filter(video=video).order_by('shot_datetime')
-            shot_datetime_list = set()
-            for person in person_list:
-                shot_datetime_list.add(person.shot_datetime)
-            for shot_datetime in shot_datetime_list:
-                person_list = Person.objects.filter(shot_datetime=shot_datetime)
 
+            shot_time_list = Person.objects.filter(video=video).distinct('shot_time')
+            for shot_time in shot_time_list:
+                person_list = Person.objects.filter(video=video, shot_time=shot_time.shot_time)
                 person_data = dict()
-                person_data['datetime'] = shot_datetime
+                person_data['datetime'] = str(shot_time.shot_time)
                 person_data['persons'] = []
                 for person in person_list:
                     person_data['persons'].append({
@@ -104,6 +101,7 @@ def cases_hash_videos(request, case_hash):
             video_list.append(video_obj)
             video_hash_list.append(video_obj.hash_value)
         case.video_hash_list = video_hash_list
+        case.save()
         extract_video_frame_array(video_list)
         return Response(json.dumps({'code': 'ok'}))
 
