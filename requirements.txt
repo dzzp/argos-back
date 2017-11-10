@@ -2,6 +2,7 @@ Django
 psycopg2
 django-phonenumber-field
 sk-video
+scikit-image
 av
 pyparsing
 djangorestframework
@@ -10,3 +11,5 @@ lxml
 matplotlib
 pillow
 annoy
+numpy
+scipy
