@@ -24,6 +24,9 @@ class Case(models.Model):
     generated_datetime = models.DateTimeField(auto_now_add=False)
     memo = models.TextField(blank=True)
 
+    def __str__(self):
+        return str(self._id)
+
 
 class Video(models.Model):
     _id = models.AutoField(primary_key=True)

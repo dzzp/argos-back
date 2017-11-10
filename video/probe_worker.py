@@ -1,12 +1,9 @@
 import os
 import re
 import subprocess
-import numpy as np
 
-from PIL import Image
 from glob import glob
 from django.conf import settings
-from video.models import Person
 
 _BATCH_SIZE = 50
 
@@ -38,8 +35,11 @@ def feature_extract(video_path):
     file_list_path = os.path.join(video_path, 'feat', 'file_list.txt')
 
     with open(file_list_path, 'w') as f:
-        f_names = sorted(glob(os.path.join(video_path, 'bbox', '*')), key=numericalSort)
+        f_names = sorted(
+            glob(os.path.join(video_path, 'bbox', '*')), key=numericalSort
+        )
         iter_len = (len(f_names) + _BATCH_SIZE - 1) // _BATCH_SIZE
+
         for f_name in f_names:
             f.write('%s 0\n' % f_name)
 
@@ -52,7 +52,7 @@ def feature_extract(video_path):
         '{caffe_cmd} {spindle_model} {rpn_proto} fc7/spindle,label {feature_lmdb},{label_lmdb} {iter_len} lmdb GPU 0'.format(
               caffe_cmd=_CAFFE_CMD,
               spindle_model=_SPINDLE_MODEL,
-              rpn_proto= _RPN_PROTO_PATH,
+              rpn_proto=_RPN_PROTO_PATH,
               feature_lmdb=os.path.join(_RPN_PATH, 'features_lmdb'),
               label_lmdb=os.path.join(_RPN_PATH, 'label_lmdb'),
               iter_len=iter_len

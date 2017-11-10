@@ -1,7 +1,10 @@
-from pyparsing import (Literal, CaselessLiteral, Word, Combine, Group, Optional,
-                       ZeroOrMore, Forward, nums, alphas, oneOf)
 import math
 import operator
+
+from pyparsing import (
+    Literal, CaselessLiteral, Word, Combine, Group,
+    Optional, ZeroOrMore, Forward, nums, alphas, oneOf
+)
 
 
 """
@@ -90,7 +93,7 @@ class NumericStringParser(object):
                    "abs": abs,
                    "trunc": lambda a: int(a),
                    "round": round,
-                   "sgn": lambda a: abs(a) > epsilon and cmp(a, 0) or 0}
+                   "sgn": lambda a: abs(a) > epsilon and self.cmp(a, 0) or 0}
 
     def evaluateStack(self, s):
         op = s.pop()
@@ -113,6 +116,9 @@ class NumericStringParser(object):
 
     def eval(self, num_string, parseAll=True):
         self.exprStack = []
-        results = self.bnf.parseString(num_string, parseAll)
+        self.bnf.parseString(num_string, parseAll)
         val = self.evaluateStack(self.exprStack[:])
         return val
+
+    def cmp(self, a, b):
+        return (a > b) - (a < b)
