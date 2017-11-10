@@ -115,6 +115,32 @@ def cases_hash_videos(request, case_hash):
         return Response(json.dumps({'code': 'ok'}))
 
 
+@api_view(['GET', 'PUT'])
+def cases_hash_videos_hash(request, case_hash, video_hash):
+    # GET
+    if request.method == 'GET':
+        video = Video.objects.get(hash_value=video_hash)
+        result = {
+            'memo': video.memo,
+            'lat': video.lat,
+            'lng': video.lng,
+            'datetime': str(video.time),    # TEMP
+            }
+
+        return Response(json.dumps(result))
+
+    # PUT
+    else:
+        video = Video.objects.get(hash_value=video_hash)
+        video.memo = request.data['memo']
+        video.lat = request.data['lat']
+        video.lng = request.data['lng']
+        video.time = request.data['datetime']    # TEMP
+        video.save()
+
+        return Response(json.dumps({'code': 'ok'}))
+
+
 @api_view(['GET', 'POST'])
 def cases_hash_probes(request, case_hash):
     # GET
