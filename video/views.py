@@ -23,8 +23,18 @@ def cases(request):
     # GET
     if request.method == 'GET':
         search_query = request.query_params.get('search')
-        if search_query is None:
-            return Response()
+        if search_query == '':
+            cases = Case.objects.all().order_by('generated_datetime')[:5]
+            result = dict()
+            result['cases'] = []
+            for case in cases:
+                result['cases'].append({
+                    'title': case.case_title,
+                    'hash': case.group_hash_id,
+                    'memo': case.memo,
+                    'datetime': str(case.generated_datetime),
+                })
+            return Response(json.dumps(result))
 
         cases = Case.objects.filter(case_title=search_query)
         result = dict()
@@ -34,7 +44,7 @@ def cases(request):
                 'title': case.case_title,
                 'hash': case.group_hash_id,
                 'memo': case.memo,
-                'datetime': case.generated_datetime,
+                'datetime': str(case.generated_datetime),
             })
         return Response(json.dumps(result))
 
@@ -131,13 +141,75 @@ def cases_hash_probes(request, case_hash):
 
     # POST
     else:
+        # THIS IS GALLERY HOHO
+        case = Case.objects.get(group_hash_id=case_hash)
+        video_hash_list = case.video_hash_list
+
+        feat_list = np.array([])
+        total_file_list = []
+        total_node = 0
+        for video_hash in video_hash_list:
+            video = Video.objects.get(hash_value=video_hash)
+            base_path = os.path.split(video.video_path)
+            file_name = os.path.splitext(base_path[-1])[0]
+            feat_path = os.path.join(base_path[0], video.hash_value + '_' + file_name)
+            feat = np.load(os.path.join(feat_path, 'feat', 'features.npy'))
+            file_list = os.path.join(feat_path, 'feat', 'file_list.txt')
+            with open(file_list, 'r') as f:
+                file_list = f.readlines()
+                file_list = [l.strip().split()[0] for l in file_list]
+                total_node += len(file_list)
+            if feat_list.shape == np.array([]).shape:
+                feat_list = feat
+            else:
+                feat_list = np.concatenate((feat_list, feat), axis=0)
+            
+            for file_name in file_list:
+                total_file_list.append(file_name)
+
+        tree = AnnoyIndex(feat_list.shape[1], metric='euclidean')
+        for i in range(len(total_file_list)):
+            tree.add_item(i, feat_list[i])
+        tree.build(100)
+
         person_hash_list = request.data['persons']
+        candidates_dict = dict()
         for person_hash in person_hash_list:
             person = Person.objects.get(hash_value=person_hash)
-            base_path = os.path.dirname(person.person_path)
+            person_index = total_file_list.index(person.person_path)
+            person_feat = feat_list[person_index]
+
+            candidates, scores = tree.get_nns_by_vector(person_feat, 1000, include_distances=True)
+            for index, cand in enumerate(candidates):
+                if not cand in candidates_dict:
+                    candidates_dict[cand] = list()
+                candidates_dict[cand].append(scores[index])
+        candidates_list = [(total_file_list[i], sum(candidates_dict[i])/len(candidates_dict[i])) for i in candidates_dict.keys()]
+        candidates_list.sort(key=lambda x:x[1])
+        candidates_list = candidates_list[:100]
+        print(candidates_list)
+
+        '''
+        person_hash_list = request.data['persons']
+        tree = AnnoyIndex(feat.shape[1], metric='euclidean')
+        total_node = 0
+        for person_hash in person_hash_list:
+            person = Person.objects.get(hash_value=person_hash)
+            base_path = os.path.split(os.path.dirname(person.person_path))[0]
             feat_path = os.path.join(base_path, 'feat')
-            feature_file = np.load(os.path.join(feat_path, 'feature.npy'))
-            print(feature_file)
+            feat = np.load(os.path.join(feat_path, 'features.npy'))
+            file_list = os.path.join(feat_path, 'file_list.txt')
+            with open(file_list, 'r') as f:
+                file_list = f.readlines()
+                file_list = [l.strip().split()[0] for l in file_list]
+                total_node += len(file_list)
+
+            for i in range(len(file_list)):
+                tree.add_item(i, feat[i])
+        tree.build(100)
+        candidates = tree.get_nns_by_item(0, 100)
+        print(candidates.index(person.person_path))
+        '''
 
         return Response(json.dumps({'code': 'ok'}))
 

@@ -35,14 +35,19 @@ def numericalSort(value):
 def feature_extract(video_path):
     after_rpn = 'after_rpn.txt'
     feature_path = os.path.join(video_path, 'feat', 'features.npy')
+    file_list_path = os.path.join(video_path, 'feat', 'file_list.txt')
 
-    with open('file_list.txt', 'w') as f:
+    with open(file_list_path, 'w') as f:
         f_names = sorted(glob(os.path.join(video_path, 'bbox', '*')), key=numericalSort)
         iter_len = (len(f_names) + _BATCH_SIZE - 1) // _BATCH_SIZE
         for f_name in f_names:
             f.write('%s 0\n' % f_name)
 
-    subprocess.call(_RPN_INF_CMD + ' file_list.txt ' + after_rpn, shell=True)
+    subprocess.call('{rpn_inf_cmd} {file_list_path} {after_rpn}'.format(
+        rpn_inf_cmd=_RPN_INF_CMD,
+        file_list_path=file_list_path,
+        after_rpn=after_rpn
+    ), shell=True)
     subprocess.call(
         '{caffe_cmd} {spindle_model} {rpn_proto} fc7/spindle,label {feature_lmdb},{label_lmdb} {iter_len} lmdb GPU 0'.format(
               caffe_cmd=_CAFFE_CMD,
