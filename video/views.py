@@ -1,21 +1,16 @@
 import os
 import json
 import numpy as np
-import multiprocessing
-from django.http import HttpResponse
-from django.shortcuts import render
 
 from annoy import AnnoyIndex
 
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from video.models import Case, Video, Person, LoadList
+from video.models import Case, Video, Person
 from video.frame_worker import extract_video_frame_array
-from video.probe_worker import feature_extract 
-from video.serializers import VideoSerializer, PersonSerializer
-from data_picker.tools import response_code, response_detect
+# from video.serializers import VideoSerializer, PersonSerializer
+# from data_picker.tools import response_code, response_detect
 
 
 @api_view(['GET', 'POST'])
@@ -81,9 +76,13 @@ def cases_hash_videos(request, case_hash):
                 'imgs': []
             }
 
-            shot_time_list = Person.objects.filter(video=video).distinct('shot_time')
+            shot_time_list = Person.objects.filter(
+                video=video
+            ).distinct('shot_time')
             for shot_time in shot_time_list:
-                person_list = Person.objects.filter(video=video, shot_time=shot_time.shot_time)
+                person_list = Person.objects.filter(
+                    video=video, shot_time=shot_time.shot_time
+                )
                 person_data = dict()
                 person_data['datetime'] = str(shot_time.shot_time)
                 person_data['persons'] = []
@@ -152,7 +151,9 @@ def cases_hash_probes(request, case_hash):
             video = Video.objects.get(hash_value=video_hash)
             base_path = os.path.split(video.video_path)
             file_name = os.path.splitext(base_path[-1])[0]
-            feat_path = os.path.join(base_path[0], video.hash_value + '_' + file_name)
+            feat_path = os.path.join(
+                base_path[0], video.hash_value + '_' + file_name
+            )
             feat = np.load(os.path.join(feat_path, 'feat', 'features.npy'))
             file_list = os.path.join(feat_path, 'feat', 'file_list.txt')
             with open(file_list, 'r') as f:
@@ -163,7 +164,7 @@ def cases_hash_probes(request, case_hash):
                 feat_list = feat
             else:
                 feat_list = np.concatenate((feat_list, feat), axis=0)
-            
+
             for file_name in file_list:
                 total_file_list.append(file_name)
 
@@ -179,37 +180,17 @@ def cases_hash_probes(request, case_hash):
             person_index = total_file_list.index(person.person_path)
             person_feat = feat_list[person_index]
 
-            candidates, scores = tree.get_nns_by_vector(person_feat, 1000, include_distances=True)
+            candidates, scores = tree.get_nns_by_vector(
+                person_feat, 1000, include_distances=True
+            )
             for index, cand in enumerate(candidates):
                 if not cand in candidates_dict:
                     candidates_dict[cand] = list()
                 candidates_dict[cand].append(scores[index])
         candidates_list = [(total_file_list[i], sum(candidates_dict[i])/len(candidates_dict[i])) for i in candidates_dict.keys()]
-        candidates_list.sort(key=lambda x:x[1])
+        candidates_list.sort(key=lambda x: x[1])
         candidates_list = candidates_list[:100]
         print(candidates_list)
-
-        '''
-        person_hash_list = request.data['persons']
-        tree = AnnoyIndex(feat.shape[1], metric='euclidean')
-        total_node = 0
-        for person_hash in person_hash_list:
-            person = Person.objects.get(hash_value=person_hash)
-            base_path = os.path.split(os.path.dirname(person.person_path))[0]
-            feat_path = os.path.join(base_path, 'feat')
-            feat = np.load(os.path.join(feat_path, 'features.npy'))
-            file_list = os.path.join(feat_path, 'file_list.txt')
-            with open(file_list, 'r') as f:
-                file_list = f.readlines()
-                file_list = [l.strip().split()[0] for l in file_list]
-                total_node += len(file_list)
-
-            for i in range(len(file_list)):
-                tree.add_item(i, feat[i])
-        tree.build(100)
-        candidates = tree.get_nns_by_item(0, 100)
-        print(candidates.index(person.person_path))
-        '''
 
         return Response(json.dumps({'code': 'ok'}))
 
@@ -236,6 +217,7 @@ def cases_hash_galleries(request, case_hash):
         return Response(json.dumps(result))
 
 
+'''
 @api_view(['POST'])
 def detection(request):
     video_list = []
@@ -251,17 +233,9 @@ def detection(request):
         video_list.append(video_obj)
         video_hash_list.append(video_obj.hash_value)
 
-    '''
-    result = multiprocessing.Queue()
-    proc = multiprocessing.Process(target=extract_video_frame_array, args=(video_list, result))
-    proc.start()
-    proc.join()
-    serialized_videos = result.get()
-    '''
-
     serialized_videos = extract_video_frame_array(video_list)
-    video_group = VideoGroup.objects.create(video_hash_list=video_hash_list)
-    
+    video_group = Case.objects.create(video_hash_list=video_hash_list)
+
     return Response(
         response_detect(serialized_videos, video_group.group_hash_id)
     )
@@ -270,11 +244,11 @@ def detection(request):
 @api_view(['POST'])
 def probe(request):
     group_id = request.data['group_id']
-    video_group = VideoGroup.objects.get(group_hash_id=group_id)
+    video_group = Case.objects.get(group_hash_id=group_id)
     video_list = video_group.video_hash_list
     for video in video_list:
         temp = Video.objects.get(hash_value=video)
-        temp_path = temp.video_path 
+        temp_path = temp.video_path
         feature_extract(os.path.join(temp_path, 'bbox'))
     return Response(json.dumps({"code": "ok"}))
 
@@ -282,7 +256,6 @@ def probe(request):
 @api_view(['GET', 'POST'])
 def processing(request):
     if request.data['code'] == 'is_detect':
-        #group = request.data['video_group_hash']
         load = LoadList.objects.all()[0]
         data = {
             'current': load.current,
@@ -293,3 +266,4 @@ def processing(request):
         return Response(json.dumps(data))
     else:
         return Response(response_code('processing_reid'))
+'''
