@@ -103,6 +103,20 @@ def extract_video_frame_array(videos):
         load.video = video.video_path
         load.current = load.current + 1
         load.save()
+
+        case_path = video.case.case_path
+        folder_name = '%s_%s' % (
+            video.hash_value, os.path.splitext(os.path.basename(video.video_path))
+        )
+        case_video_path = os.path.join(case_path, folder_name)
+        try:
+            os.mkdir(os.path.join(case_video_path, 'origin'))
+            os.mkdir(os.path.join(case_video_path, 'bbox'))
+            os.mkdir(os.path.join(case_video_path, 'feat'))
+        except Exception as e:
+            print('Folder already exists...', e)
+
+        '''
         file_path = video.video_path
         file_name = os.path.basename(file_path)
         folder_name = '%s_%s' % (
@@ -118,6 +132,7 @@ def extract_video_frame_array(videos):
             os.mkdir(os.path.join(full_path, 'feat'))
         except:
             print('Folder already exists..')
+        '''
 
         metadata = extract_video_metadata(video.hash_value)
         interval = metadata['frame_rate']

@@ -25,9 +25,6 @@ urlpatterns = [
     url(r'^cases/([a-z0-9]{7})/videos/([a-z0-9]{7})/$', views.cases_hash_videos_hash, name='cases_hash_videos_hash'),
     url(r'^cases/([a-z0-9]{7})/probes/$', views.cases_hash_probes, name='cases_hash_probes'),
     url(r'^cases/([a-z0-9]{7})/galleries/$', views.cases_hash_galleries, name='cases_hash_galleries'),
-    #url(r'^detection/$', views.detection, name='detection'),
-    #url(r'^reid/$', reid, name='reid'),
-    #url(r'^probe/$', views.probe, name='probe'),
     url(r'^processing/$', views.processing, name='processing'),
     url(r'^admin/', admin.site.urls),
 ]

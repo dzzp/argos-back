@@ -3,14 +3,13 @@ import json
 import numpy as np
 
 from annoy import AnnoyIndex
+from django.conf import settings
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from video.models import Case, Video, Person
 from video.frame_worker import extract_video_frame_array
-# from video.serializers import VideoSerializer, PersonSerializer
-# from data_picker.tools import response_code, response_detect
 
 
 @api_view(['GET', 'POST'])
@@ -45,11 +44,18 @@ def cases(request):
 
     # POST
     else:
+        base_path = os.path.join(settings.BASE_DIR, 'assets')
+        
         case = Case.objects.create(
             case_title=request.data['title'],
             memo=request.data['memo'],
             generated_datetime=request.data['datetime'],
         )
+        case_path = os.path.join(base_path, case.group_hash_id)
+        os.mkdir(case_path)
+        case.case_path = case.case_path
+        case.save()
+
         return Response(json.dumps({
             'title': request.data['title'],
             'memo': request.data['memo'],
@@ -66,6 +72,7 @@ def cases_hash_videos(request, case_hash):
             case = Case.objects.get(group_hash_id=case_hash)
         except:
             return Response(json.dumps({'error': 'error'}))
+
         result = dict()
         result['videos'] = []
         for video_hash in case.video_hash_list:
@@ -104,13 +111,12 @@ def cases_hash_videos(request, case_hash):
         video_hash_list = []
         for video in request.data['videos']:
             video_obj = Video.objects.create(
+                case=case,
                 video_path=video['path'],
                 memo=video['memo']
             )
             video_list.append(video_obj)
             video_hash_list.append(video_obj.hash_value)
-        case.video_hash_list = video_hash_list
-        case.save()
         extract_video_frame_array(video_list)
         return Response(json.dumps({'code': 'ok'}))
 
@@ -120,12 +126,13 @@ def cases_hash_videos_hash(request, case_hash, video_hash):
     # GET
     if request.method == 'GET':
         video = Video.objects.get(hash_value=video_hash)
+        shot_datetime = video.date + video.time
         result = {
             'memo': video.memo,
             'lat': video.lat,
             'lng': video.lng,
-            'datetime': str(video.time),    # TEMP
-            }
+            'datetime': str(shot_datetime),    # TEMP
+        }
 
         return Response(json.dumps(result))
 
@@ -135,7 +142,7 @@ def cases_hash_videos_hash(request, case_hash, video_hash):
         video.memo = request.data['memo']
         video.lat = request.data['lat']
         video.lng = request.data['lng']
-        video.time = request.data['datetime']    # TEMP
+        video.date = request.data['datetime']    # TEMP
         video.save()
 
         return Response(json.dumps({'code': 'ok'}))
@@ -146,12 +153,11 @@ def cases_hash_probes(request, case_hash):
     # GET
     if request.method == 'GET':
         case = Case.objects.get(group_hash_id=case_hash)
-        video_hash_list = case.video_hash_list
+        video_list = Video.objects.filter(case=case)
 
         result = dict()
         result['persons'] = []
-        for video_hash in video_hash_list:
-            video = Video.objects.get(hash_value=video_hash)
+        for video in video_list:
             person_list = Person.objects.filter(video=video)
 
             for person in person_list:
@@ -166,63 +172,65 @@ def cases_hash_probes(request, case_hash):
 
     # POST
     else:
-        # THIS IS GALLERY HOHO
-        case = Case.objects.get(group_hash_id=case_hash)
-        video_hash_list = case.video_hash_list
-
-        feat_list = np.array([])
-        total_file_list = []
-        total_node = 0
-        for video_hash in video_hash_list:
-            video = Video.objects.get(hash_value=video_hash)
-            base_path = os.path.split(video.video_path)
-            file_name = os.path.splitext(base_path[-1])[0]
-            feat_path = os.path.join(
-                base_path[0], video.hash_value + '_' + file_name
-            )
-            feat = np.load(os.path.join(feat_path, 'feat', 'features.npy'))
-            file_list = os.path.join(feat_path, 'feat', 'file_list.txt')
-            with open(file_list, 'r') as f:
-                file_list = f.readlines()
-                file_list = [l.strip().split()[0] for l in file_list]
-                total_node += len(file_list)
-            if feat_list.shape == np.array([]).shape:
-                feat_list = feat
-            else:
-                feat_list = np.concatenate((feat_list, feat), axis=0)
-
-            for file_name in file_list:
-                total_file_list.append(file_name)
-
-        tree = AnnoyIndex(feat_list.shape[1], metric='euclidean')
-        for i in range(len(total_file_list)):
-            tree.add_item(i, feat_list[i])
-        tree.build(100)
-
-        person_hash_list = request.data['persons']
-        candidates_dict = dict()
-        for person_hash in person_hash_list:
-            person = Person.objects.get(hash_value=person_hash)
-            person_index = total_file_list.index(person.person_path)
-            person_feat = feat_list[person_index]
-
-            candidates, scores = tree.get_nns_by_vector(
-                person_feat, 1000, include_distances=True
-            )
-            for index, cand in enumerate(candidates):
-                if not cand in candidates_dict:
-                    candidates_dict[cand] = list()
-                candidates_dict[cand].append(scores[index])
-        candidates_list = [(total_file_list[i], sum(candidates_dict[i])/len(candidates_dict[i])) for i in candidates_dict.keys()]
-        candidates_list.sort(key=lambda x: x[1])
-        candidates_list = candidates_list[:100]
-        print(candidates_list)
-
         return Response(json.dumps({'code': 'ok'}))
 
 
 @api_view(['GET'])
 def cases_hash_galleries(request, case_hash):
+    case = Case.objects.get(group_hash_id=case_hash)
+    video_list = Video.objects.filter(case=case)
+
+    feat_list = np.array([])
+    total_file_list = []
+    total_node = 0
+    for video in video_list:
+        base_path = os.path.split(video.video_path)
+        file_name = os.path.splitext(base_path[-1])[0]
+        feat_path = os.path.join(
+            base_path[0], video.hash_value + '_' + file_name
+        )
+        feat = np.load(os.path.join(feat_path, 'feat', 'features.npy'))
+        file_list = os.path.join(feat_path, 'feat', 'file_list.txt')
+        with open(file_list, 'r') as f:
+            file_list = f.readlines()
+            file_list = [l.strip().split()[0] for l in file_list]
+            total_node += len(file_list)
+        if feat_list.shape == np.array([]).shape:
+            feat_list = feat
+        else:
+            feat_list = np.concatenate((feat_list, feat), axis=0)
+
+        for file_name in file_list:
+            total_file_list.append(file_name)
+
+    tree = AnnoyIndex(feat_list.shape[1], metric='euclidean')
+    for i in range(len(total_file_list)):
+        tree.add_item(i, feat_list[i])
+    tree.build(100)
+
+    person_hash_list = request.data['persons']
+    candidates_dict = dict()
+    for person_hash in person_hash_list:
+        person = Person.objects.get(hash_value=person_hash)
+        person_index = total_file_list.index(person.person_path)
+        person_feat = feat_list[person_index]
+
+        candidates, scores = tree.get_nns_by_vector(
+            person_feat, 1000, include_distances=True
+        )
+        for index, cand in enumerate(candidates):
+            if not cand in candidates_dict:
+                candidates_dict[cand] = list()
+            candidates_dict[cand].append(scores[index])
+    candidates_list = [(total_file_list[i], min(candidates_dict[i])) for i in candidates_dict.keys()]
+    candidates_list.sort(key=lambda x: x[1])
+    candidates_list = candidates_list[:100]
+    print(candidates_list)
+
+    return Response(json.dumps({}))
+
+
+'''
     case = Case.objects.get(group_hash_id=case_hash)
     video_hash_list = case.video_hash_list
 
@@ -241,42 +249,7 @@ def cases_hash_galleries(request, case_hash):
             })
 
         return Response(json.dumps(result))
-
-
 '''
-@api_view(['POST'])
-def detection(request):
-    video_list = []
-    video_hash_list = []
-    for video in request.data['videos']:
-        serializer = VideoSerializer(data=video)
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        video_obj = serializer.save()
-        video_list.append(video_obj)
-        video_hash_list.append(video_obj.hash_value)
-
-    serialized_videos = extract_video_frame_array(video_list)
-    video_group = Case.objects.create(video_hash_list=video_hash_list)
-
-    return Response(
-        response_detect(serialized_videos, video_group.group_hash_id)
-    )
-
-
-@api_view(['POST'])
-def probe(request):
-    group_id = request.data['group_id']
-    video_group = Case.objects.get(group_hash_id=group_id)
-    video_list = video_group.video_hash_list
-    for video in video_list:
-        temp = Video.objects.get(hash_value=video)
-        temp_path = temp.video_path
-        feature_extract(os.path.join(temp_path, 'bbox'))
-    return Response(json.dumps({"code": "ok"}))
 
 
 @api_view(['GET', 'POST'])
@@ -292,4 +265,3 @@ def processing(request):
         return Response(json.dumps(data))
     else:
         return Response(response_code('processing_reid'))
-'''

@@ -4,6 +4,7 @@ import hashlib
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
+
 def _generateHash():
      now = str(time.time()).encode('utf-8')
      hash_value = hashlib.sha1(now)
@@ -13,9 +14,7 @@ def _generateHash():
 class Case(models.Model):
     _id = models.AutoField(primary_key=True)
     case_title = models.CharField(max_length=50)
-    video_hash_list = ArrayField(
-        models.CharField(max_length=7, blank=True)
-    , default=list)
+    case_path = models.FilePathField(blank=True)
     group_hash_id = models.CharField(
         max_length=8,
         default=_generateHash,
@@ -30,9 +29,11 @@ class Case(models.Model):
 
 class Video(models.Model):
     _id = models.AutoField(primary_key=True)
+    case = models.ForeignKey('Case', on_delete=models.CASCADE)
     hash_value = models.CharField(max_length=7, default=_generateHash, unique=True)
-    video_path = models.TextField()
+    video_path = models.FilePathField()
     #time = models.DateTimeField(blank=True, auto_now_add=True)
+    date = models.DateField(default='2000-01-01')
     time = models.TimeField(default='00:00:00')
     memo = models.TextField(blank=True)
     lat = models.FloatField(default=0.0)
@@ -55,7 +56,6 @@ class Person(models.Model):
     frame_num = models.IntegerField()
     #shot_datetime = models.DateTimeField(auto_now_add=False)
     shot_time = models.TimeField(auto_now_add=False)
-    probe_value = models.FloatField(default=0.0)
 
     def __str__(self):
         return str(self._id)
