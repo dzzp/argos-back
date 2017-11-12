@@ -8,7 +8,8 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from video.models import Case, Video, Person
+from data_picker.tools import response_code
+from video.models import Case, Video, Person, LoadList
 from video.frame_worker import extract_video_frame_array
 
 
@@ -180,33 +181,51 @@ def cases_hash_galleries(request, case_hash):
     case = Case.objects.get(group_hash_id=case_hash)
     video_list = Video.objects.filter(case=case)
 
-    feat_list = np.array([])
-    total_file_list = []
-    total_node = 0
-    for video in video_list:
-        base_path = os.path.split(video.video_path)
-        file_name = os.path.splitext(base_path[-1])[0]
-        feat_path = os.path.join(
-            base_path[0], video.hash_value + '_' + file_name
-        )
-        feat = np.load(os.path.join(feat_path, 'feat', 'features.npy'))
-        file_list = os.path.join(feat_path, 'feat', 'file_list.txt')
-        with open(file_list, 'r') as f:
-            file_list = f.readlines()
-            file_list = [l.strip().split()[0] for l in file_list]
-            total_node += len(file_list)
-        if feat_list.shape == np.array([]).shape:
-            feat_list = feat
-        else:
-            feat_list = np.concatenate((feat_list, feat), axis=0)
+    feat_path = os.path.join(case.case_path, 'feat_list.npy')
+    total_list_path = os.path.join(case.case_path, 'total_list.txt')
+    tree_path = os.path.join(case.case_path, 'galleries.ann')
 
-        for file_name in file_list:
-            total_file_list.append(file_name)
+    try:
+        feat_list = np.load(feat_path)
+        with open(total_list_path, 'r') as f:
+            total_file_list = f.readlines()
+    except:
+        feat_list = np.array([])
+        total_file_list = []
+        total_node = 0
+        for video in video_list:
+            folder_name = '%s_%s' % (
+                video.hash_value,
+                os.path.splitext(os.path.basename(video.video_path))
+            )
+            base_path = os.path.join(case.case_path, folder_name)
 
-    tree = AnnoyIndex(feat_list.shape[1], metric='euclidean')
-    for i in range(len(total_file_list)):
-        tree.add_item(i, feat_list[i])
-    tree.build(100)
+            feat = np.load(os.path.join(base_path, 'feat', 'features.npy'))
+            file_list = os.path.join(base_path, 'feat', 'file_list.txt')
+            with open(file_list, 'r') as f:
+                file_list = f.readlines()
+                file_list = [l.strip().split()[0] for l in file_list]
+                total_node += len(file_list)
+            if feat_list.shape == np.array([]).shape:
+                feat_list = feat
+            else:
+                feat_list = np.concatenate((feat_list, feat), axis=0)
+
+            for file_name in file_list:
+                total_file_list.append(file_name)
+
+        np.save(feat_path, feat_list)
+        with open(total_list_path, 'w') as f:
+            f.writelines('%s\n' % file_item for file_item in total_file_list)
+
+        tree = AnnoyIndex(feat_list.shape[1], metric='euclidean')
+        for i in range(len(total_file_list)):
+            tree.add_item(i, feat_list[i])
+        tree.build(100)
+        tree.save(tree_path)
+
+    tree.AnnoyIndex(feat_list.shape[1], metric='euclidean')
+    tree.load(tree_path)
 
     person_hash_list = request.data['persons']
     candidates_dict = dict()
@@ -228,28 +247,6 @@ def cases_hash_galleries(request, case_hash):
     print(candidates_list)
 
     return Response(json.dumps({}))
-
-
-'''
-    case = Case.objects.get(group_hash_id=case_hash)
-    video_hash_list = case.video_hash_list
-
-    result = dict()
-    result['persons'] = []
-    for video_hash in video_hash_list:
-        video = Video.objects.get(hash_value=video_hash)
-        person_list = Person.objects.filter(video=video)
-
-        for person in person_list:
-            result['persons'].append({
-                'person_hash': person.hash_value,
-                'video_hash': video.hash_value,
-                'bbox_path': person.person_path,
-                'orig_path': 'temp',
-            })
-
-        return Response(json.dumps(result))
-'''
 
 
 @api_view(['GET', 'POST'])

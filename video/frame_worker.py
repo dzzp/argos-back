@@ -7,8 +7,7 @@ import multiprocessing
 
 from PIL import Image, ImageDraw
 
-from video.models import Video, LoadList
-from video.serializers import PersonSerializer
+from video.models import Video, Person, LoadList
 from video.calculation import NumericStringParser
 from object_detection.main import detect_person
 
@@ -44,16 +43,14 @@ def extract_video_metadata(hash_value):
 def save_video_frame(hash_value, frames, bbox_list):
     video = Video.objects.get(hash_value=hash_value)
     file_path = os.path.join(
-        os.path.dirname(os.path.abspath(video.video_path)),
+        video.case.case_path,
         '%s_%s' % (
             video.hash_value,
             os.path.splitext(os.path.basename(video.video_path))[0]
         )
     )
-    person_list = []
 
     idx = 0
-
     for frame_idx in range(len(frames)):
         origin_img = Image.fromarray(frames[frame_idx])
         draw = ImageDraw.Draw(origin_img)
@@ -62,9 +59,6 @@ def save_video_frame(hash_value, frames, bbox_list):
         for bbox, score in bbox_list[frame_idx]:
             person_name = os.path.join(
                 file_path, 'bbox', '%d_%d.jpg' % (idx, img_idx)
-            )
-            feature_name = os.path.join(
-                file_path, 'feat', '%d_%d.npy' % (idx, img_idx)
             )
 
             crop_img = origin_img.crop(bbox)
@@ -78,18 +72,16 @@ def save_video_frame(hash_value, frames, bbox_list):
                 ) + datetime.timedelta(seconds=frame_idx)
             ).time()
 
-            person_list.append({
-                'person_path': person_name,
-                'feature_path': feature_name,
-                'score': score,
-                'frame_num': video.frame_rate*frame_idx,
-                'shot_time': str(shot_time),
-                'video': video,
-            })
+            Person.objects.create(
+                video=video,
+                person_path=person_name,
+                score=score,
+                frame_num=video.frame_rate*frame_idx,
+                shot_time=shot_time,
+            )
 
             origin_img.save(os.path.join(file_path, 'origin', '%d.jpg' % idx))
         idx += 1
-    return person_list
 
 
 def extract_video_frame_array(videos):
@@ -98,7 +90,6 @@ def extract_video_frame_array(videos):
     load.current = 0
     load.save()
 
-    serialized_videos = []
     for video in videos:
         load.video = video.video_path
         load.current = load.current + 1
@@ -106,7 +97,8 @@ def extract_video_frame_array(videos):
 
         case_path = video.case.case_path
         folder_name = '%s_%s' % (
-            video.hash_value, os.path.splitext(os.path.basename(video.video_path))
+            video.hash_value,
+            os.path.splitext(os.path.basename(video.video_path))
         )
         case_video_path = os.path.join(case_path, folder_name)
         try:
@@ -116,28 +108,10 @@ def extract_video_frame_array(videos):
         except Exception as e:
             print('Folder already exists...', e)
 
-        '''
-        file_path = video.video_path
-        file_name = os.path.basename(file_path)
-        folder_name = '%s_%s' % (
-            video.hash_value, os.path.splitext(file_name)[0]
-        )
-        folder_path = os.path.dirname(os.path.abspath(file_path))
-        full_path = os.path.join(folder_path, folder_name)
-
-        try:
-            os.mkdir(full_path)
-            os.mkdir(os.path.join(full_path, 'origin'))
-            os.mkdir(os.path.join(full_path, 'bbox'))
-            os.mkdir(os.path.join(full_path, 'feat'))
-        except:
-            print('Folder already exists..')
-        '''
-
         metadata = extract_video_metadata(video.hash_value)
         interval = metadata['frame_rate']
 
-        video_pipe = av.open(file_path)
+        video_pipe = av.open(video.video_path)
         pass_count = 0
         arr = []
         for frame in video_pipe.decode(video=0):
@@ -152,11 +126,7 @@ def extract_video_frame_array(videos):
         mpp.join()
         ret = mpq.get()
 
-        person_list = save_video_frame(metadata['hash_value'], arr, ret)
-        serialized_videos.append(
-            PersonSerializer(person_list).getPersonList()
-        )
-        feature_extract(full_path)
+        save_video_frame(metadata['hash_value'], arr, ret)
+        feature_extract(case_video_path)
         video.is_detect_done = True
         video.save()
-    return serialized_videos
