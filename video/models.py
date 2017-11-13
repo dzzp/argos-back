@@ -51,11 +51,19 @@ class Person(models.Model):
     hash_value = models.CharField(max_length=7, default=_generateHash, unique=True)
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
     person_path = models.FilePathField()
-    feature_path = models.FilePathField()
     score = models.FloatField()
     frame_num = models.IntegerField()
     #shot_datetime = models.DateTimeField(auto_now_add=False)
     shot_time = models.TimeField(auto_now_add=False)
+
+    def __str__(self):
+        return str(self._id)
+
+
+class ProbeList(models.Model):
+    _id = models.AutoField(primary_key=True)
+    case = models.ForeignKey('Case', on_delete=models.CASCADE)
+    person = models.ForeignKey('Person', on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self._id)
