@@ -98,10 +98,15 @@ def extract_video_frame_array(videos):
         case_path = video.case.case_path
         folder_name = '%s_%s' % (
             video.hash_value,
-            os.path.splitext(os.path.basename(video.video_path))
+            os.path.splitext(os.path.basename(video.video_path))[0]
         )
         case_video_path = os.path.join(case_path, folder_name)
+
+        print(case_path)
+        print(folder_name)
+        print(case_video_path)
         try:
+            os.mkdir(case_video_path)
             os.mkdir(os.path.join(case_video_path, 'origin'))
             os.mkdir(os.path.join(case_video_path, 'bbox'))
             os.mkdir(os.path.join(case_video_path, 'feat'))
