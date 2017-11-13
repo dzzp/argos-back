@@ -11,10 +11,10 @@ def config():
     param['use_gpu'] = 0
 
     param['caffe_model'] = os.path.join(
-        _BASE_DIR, '/RPN/model/pose_iter_265000.caffemodel'
+        _BASE_DIR, 'RPN/model/pose_iter_265000.caffemodel'
     )
     param['deploy_file'] = os.path.join(
-        _BASE_DIR, '/RPN/model/pose_deploy.prototxt'
+        _BASE_DIR, 'RPN/model/pose_deploy.prototxt'
     )
 
     param['box_size'] = 256
