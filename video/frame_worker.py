@@ -87,7 +87,7 @@ def save_video_frame(hash_value, frames, bbox_list):
 def extract_video_frame_array(case_hash, videos):
     load = LoadList.objects.get(case=case_hash)
     load.total = len(videos)
-    load.current = 0
+    load.current = -1
     load.save()
 
     for video in videos:
@@ -132,3 +132,5 @@ def extract_video_frame_array(case_hash, videos):
         feature_extract(case_video_path)
         video.is_detect_done = True
         video.save()
+    load.current += 1
+    load.save()
