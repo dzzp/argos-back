@@ -1,0 +1,15 @@
+[python]
+python-dev
+python3-dev
+pkg-config
+
+[video]
+ffmpeg
+libavformat-dev
+libavcodec-dev
+libavdevice-dev
+libavutil-dev
+libswscale-dev
+libavresample-dev
+libavfilter-dev
+libav-tools
