@@ -2,7 +2,6 @@ import time
 import hashlib
 
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
 
 
 def _generateHash():
@@ -33,7 +32,7 @@ class Video(models.Model):
     hash_value = models.CharField(max_length=7, default=_generateHash, unique=True)
     video_path = models.FilePathField()
     #time = models.DateTimeField(blank=True, auto_now_add=True)
-    date = models.DateField(default='2000-01-01')
+    date = models.DateField(default='0001-01-01')
     time = models.TimeField(default='00:00:00')
     memo = models.TextField(blank=True)
     lat = models.FloatField(default=0.0)
@@ -74,6 +73,7 @@ class TestVideo(models.Model):
 
 
 class LoadList(models.Model):
+    case = models.CharField(max_length=8, unique=True)
     video = models.CharField(max_length=100, default='none')
     total = models.IntegerField(default=0)
     current = models.IntegerField(default=0)

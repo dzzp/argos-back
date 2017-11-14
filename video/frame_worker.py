@@ -84,8 +84,8 @@ def save_video_frame(hash_value, frames, bbox_list):
         idx += 1
 
 
-def extract_video_frame_array(videos):
-    load = LoadList.objects.all()[0]
+def extract_video_frame_array(case_hash, videos):
+    load = LoadList.objects.get(case=case_hash)
     load.total = len(videos)
     load.current = 0
     load.save()
@@ -102,9 +102,6 @@ def extract_video_frame_array(videos):
         )
         case_video_path = os.path.join(case_path, folder_name)
 
-        print(case_path)
-        print(folder_name)
-        print(case_video_path)
         try:
             os.mkdir(case_video_path)
             os.mkdir(os.path.join(case_video_path, 'origin'))
