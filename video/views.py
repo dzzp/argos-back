@@ -1,14 +1,14 @@
 import os
-import json
 import numpy as np
 
 from annoy import AnnoyIndex
+from datetime import datetime
 from django.conf import settings
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from data_picker.tools import response_code
+from data_picker.tools import get_origin_path
 from video.frame_worker import extract_video_frame_array
 from video.models import Case, Video, Person, ProbeList, LoadList
 
@@ -29,7 +29,7 @@ def cases(request):
                     'memo': case.memo,
                     'datetime': str(case.generated_datetime),
                 })
-            return Response(json.dumps(result))
+            return Response(data=result)
 
         cases = Case.objects.filter(case_title=search_query)
         result = dict()
@@ -41,7 +41,7 @@ def cases(request):
                 'memo': case.memo,
                 'datetime': str(case.generated_datetime),
             })
-        return Response(json.dumps(result))
+        return Response(data=result)
 
     # POST
     else:
@@ -57,12 +57,14 @@ def cases(request):
         case.case_path = case_path
         case.save()
 
-        return Response(json.dumps({
+        LoadList.objects.create(case=case.group_hash_id)
+
+        return Response(data={
             'title': request.data['title'],
             'memo': request.data['memo'],
             'datetime': request.data['datetime'],
             'hash': case.group_hash_id,
-        }))
+        })
 
 
 @api_view(['GET', 'POST'])
@@ -72,7 +74,7 @@ def cases_hash_videos(request, case_hash):
         try:
             case = Case.objects.get(group_hash_id=case_hash)
         except:
-            return Response(json.dumps({'error': 'error'}))
+            return Response(data={'error': 'error'})
 
         result = dict()
         result['videos'] = []
@@ -91,18 +93,23 @@ def cases_hash_videos(request, case_hash):
                 person_list = Person.objects.filter(
                     video=video, shot_time=shot_time.shot_time
                 )
+
                 person_data = dict()
                 person_data['datetime'] = str(shot_time.shot_time)
                 person_data['persons'] = []
                 for person in person_list:
+                    orig_path = get_origin_path(
+                        case.case_path, person.person_path
+                    )
+
                     person_data['persons'].append({
                         'hash': person.hash_value,
                         'bbox_path': person.person_path,
-                        'orig_path': 'temp',
+                        'orig_path': orig_path,
                     })
                 data['imgs'].append(person_data)
             result['videos'].append(data)
-        return Response(json.dumps(result))
+        return Response(data=result)
 
     # POST
     else:
@@ -116,8 +123,8 @@ def cases_hash_videos(request, case_hash):
                 memo=video['memo']
             )
             video_list.append(video_obj)
-        extract_video_frame_array(video_list)
-        return Response(json.dumps({'code': 'ok'}))
+        extract_video_frame_array(case_hash, video_list)
+        return Response(data={'code': 'ok'})
 
 
 @api_view(['GET', 'PUT'])
@@ -133,18 +140,21 @@ def cases_hash_videos_hash(request, case_hash, video_hash):
             'datetime': str(shot_datetime),    # TEMP
         }
 
-        return Response(json.dumps(result))
+        return Response(data=result)
 
     # PUT
     else:
+        datetime_data = datetime.strptime(request.data['datetime'], '%Y-%m-%dT%H:%M:%S')
+
         video = Video.objects.get(hash_value=video_hash)
         video.memo = request.data['memo']
         video.lat = request.data['lat']
         video.lng = request.data['lng']
-        video.date = request.data['datetime']    # TEMP
+        video.date = datetime_data.date()
+        video.time = datetime_data.time()
         video.save()
 
-        return Response(json.dumps({'code': 'ok'}))
+        return Response(data={'code': 'ok'})
 
 
 @api_view(['GET', 'POST'])
@@ -158,13 +168,8 @@ def cases_hash_probes(request, case_hash):
         probe_list = ProbeList.objects.filter(case=case)
 
         for probe in probe_list:
-            img_name = os.path.basename(
-                probe.person.person_path
-            ).split('_')[0] + '.jpg'
-            orig_path = os.path.join(
-                case.case_path,
-                'origin',
-                img_name
+            orig_path = get_origin_path(
+                case.case_path, probe.person.person_path
             )
 
             result['persons'].append({
@@ -174,7 +179,7 @@ def cases_hash_probes(request, case_hash):
                 'orig_path': orig_path,
             })
 
-        return Response(json.dumps(result))
+        return Response(data=result)
 
     # POST
     else:
@@ -189,7 +194,7 @@ def cases_hash_probes(request, case_hash):
         for person_hash in person_hash_list:
             person = Person.objects.get(hash_value=person_hash)
             ProbeList.objects.create(case=case, person=person)
-        return Response(json.dumps({'code': 'ok'}))
+        return Response(data={'code': 'ok'})
 
 
 @api_view(['GET'])
@@ -272,14 +277,9 @@ def cases_hash_galleries(request, case_hash):
 
     for candidate, distance in candidates_list:
         person = Person.objects.get(person_path=candidate)
-
-        img_name = os.path.basename(person.person_path).split('_')[0] + '.jpg'
-        orig_path = os.path.join(
-            case.case_path,
-            'origin',
-            img_name
+        orig_path = get_origin_path(
+            case.case_path, person.person_path
         )
-
 
         result['persons'].append({
             'person_hash': person.hash_value,
@@ -289,21 +289,16 @@ def cases_hash_galleries(request, case_hash):
             'distance': distance
         })
 
-
-
-    return Response(json.dumps(result))
+    return Response(data=result)
 
 
 @api_view(['GET', 'POST'])
-def processing(request):
-    if request.data['code'] == 'is_detect':
-        load = LoadList.objects.all()[0]
-        data = {
-            'current': load.current,
-            'total': load.total,
-            'video': load.video,
-            'code': 'processing_detect'
-        }
-        return Response(json.dumps(data))
-    else:
-        return Response(response_code('processing_reid'))
+def processing(request, case_hash):
+    load = LoadList.objects.get(case=case_hash)
+    data = {
+        'current': load.current,
+        'total': load.total,
+        'video': load.video,
+        'code': 'processing_detect'
+    }
+    return Response(data=data)
