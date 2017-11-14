@@ -1,30 +1,12 @@
-import json
-import datetime
+import os
 
 
-'''
-CODE LIST
+def get_origin_path(case_path, img_path):
+    img_name = os.path.basename(
+        img_path
+    ).split('_')[0] + '.jpg'
+    origin_path = os.path.join(
+        case_path, 'origin', img_name
+    )
 
-- is_detect
-- processing_detect
-- is_reid
-- processing_reid
-'''
-def response_code(code, is_json=True):
-    result = {
-        'code': code
-    }
-
-    if is_json:
-        return json.dumps(result)
-    
-    return result
-
-
-def response_detect(video_list, group_id):
-    result = {
-        'code': 'detect_response',
-        'videos': video_list
-    }
-
-    return json.dumps(result)
+    return origin_path
