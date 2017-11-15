@@ -5,9 +5,9 @@ from django.db import models
 
 
 def _generateHash():
-     now = str(time.time()).encode('utf-8')
-     hash_value = hashlib.sha1(now)
-     return hash_value.hexdigest()[:7]
+    now = str(time.time()).encode('utf-8')
+    hash_value = hashlib.sha1(now)
+    return hash_value.hexdigest()[:7]
 
 
 class Case(models.Model):
@@ -29,9 +29,10 @@ class Case(models.Model):
 class Video(models.Model):
     _id = models.AutoField(primary_key=True)
     case = models.ForeignKey('Case', on_delete=models.CASCADE)
-    hash_value = models.CharField(max_length=7, default=_generateHash, unique=True)
+    hash_value = models.CharField(
+        max_length=7, default=_generateHash, unique=True
+    )
     video_path = models.FilePathField()
-    #time = models.DateTimeField(blank=True, auto_now_add=True)
     date = models.DateField(default='0001-01-01')
     time = models.TimeField(default='00:00:00')
     memo = models.TextField(blank=True)
@@ -47,12 +48,13 @@ class Video(models.Model):
 
 class Person(models.Model):
     _id = models.AutoField(primary_key=True)
-    hash_value = models.CharField(max_length=7, default=_generateHash, unique=True)
+    hash_value = models.CharField(
+        max_length=7, default=_generateHash, unique=True
+    )
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
     person_path = models.FilePathField()
     score = models.FloatField()
     frame_num = models.IntegerField()
-    #shot_datetime = models.DateTimeField(auto_now_add=False)
     shot_time = models.TimeField(auto_now_add=False)
 
     def __str__(self):

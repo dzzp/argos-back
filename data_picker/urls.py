@@ -21,10 +21,30 @@ from video import views
 
 urlpatterns = [
     url(r'^cases/$', views.cases, name='cases'),
-    url(r'^cases/([a-z0-9]{7})/videos/$', views.cases_hash_videos, name='cases_hash_videos'),
-    url(r'^cases/([a-z0-9]{7})/videos/([a-z0-9]{7})/$', views.cases_hash_videos_hash, name='cases_hash_videos_hash'),
-    url(r'^cases/([a-z0-9]{7})/probes/$', views.cases_hash_probes, name='cases_hash_probes'),
-    url(r'^cases/([a-z0-9]{7})/galleries/$', views.cases_hash_galleries, name='cases_hash_galleries'),
-    url(r'^cases/([a-z0-9]{7})/processing/$', views.processing, name='processing'),
+    url(
+        r'^cases/([a-z0-9]{7})/videos/$',
+        views.cases_hash_videos,
+        name='cases_hash_videos'
+    ),
+    url(
+        r'^cases/([a-z0-9]{7})/videos/([a-z0-9]{7})/$',
+        views.cases_hash_videos_hash,
+        name='cases_hash_videos_hash'
+    ),
+    url(
+        r'^cases/([a-z0-9]{7})/probes/$',
+        views.cases_hash_probes,
+        name='cases_hash_probes'
+    ),
+    url(
+        r'^cases/([a-z0-9]{7})/galleries/$',
+        views.cases_hash_galleries,
+        name='cases_hash_galleries'
+    ),
+    url(
+        r'^cases/([a-z0-9]{7})/processing/$',
+        views.processing,
+        name='processing'
+    ),
     url(r'^admin/', admin.site.urls),
 ]

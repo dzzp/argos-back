@@ -7,20 +7,6 @@ from pyparsing import (
 )
 
 
-"""
-__author__ = 'Paul McGuire'
-__version__ = '$Revision: 0.0 $'
-__date__ = '$Date: 2009-03-20 $'
-__source__ = '''http://pyparsing.wikispaces.com/file/view/fourFn.py
-http://pyparsing.wikispaces.com/message/view/home/15549426
-'''
-__note__ = '''
-All I've done is rewrap Paul McGuire's fourFn.py as a class, so I can use it
-more easily in other places.
-'''
-"""
-
-
 class NumericStringParser(object):
     '''
     Most of this code comes from the fourFn.py pyparsing example
@@ -34,7 +20,7 @@ class NumericStringParser(object):
             self.exprStack.append('unary -')
 
     def __init__(self):
-        """
+        '''
         expop   :: '^'
         multop  :: '*' | '/'
         addop   :: '+' | '-'
@@ -43,12 +29,15 @@ class NumericStringParser(object):
         factor  :: atom [ expop factor ]*
         term    :: factor [ multop factor ]*
         expr    :: term [ addop term ]*
-        """
+        '''
+
         point = Literal(".")
         e = CaselessLiteral("E")
-        fnumber = Combine(Word("+-" + nums, nums) +
-                          Optional(point + Optional(Word(nums))) +
-                          Optional(e + Word("+-" + nums, nums)))
+        fnumber = Combine(
+            Word("+-" + nums, nums) +
+            Optional(point + Optional(Word(nums))) +
+            Optional(e + Word("+-" + nums, nums))
+        )
         ident = Word(alphas, alphas + nums + "_$")
         plus = Literal("+")
         minus = Literal("-")
@@ -61,10 +50,11 @@ class NumericStringParser(object):
         expop = Literal("^")
         pi = CaselessLiteral("PI")
         expr = Forward()
-        atom = ((Optional(oneOf("- +")) +
-                 (ident + lpar + expr + rpar | pi | e | fnumber).setParseAction(self.pushFirst))
-                | Optional(oneOf("- +")) + Group(lpar + expr + rpar)
-                ).setParseAction(self.pushUMinus)
+        atom = (
+            (Optional(oneOf("- +")) +
+            (ident + lpar + expr + rpar | pi | e | fnumber).setParseAction(self.pushFirst))
+            | Optional(oneOf("- +")) + Group(lpar + expr + rpar)
+        ).setParseAction(self.pushUMinus)
         # by defining exponentiation as "atom [ ^ factor ]..." instead of
         # "atom [ ^ atom ]...", we get right-to-left exponents, instead of left-to-right
         # that is, 2^3^2 = 2^(3^2), not (2^3)^2.
@@ -81,19 +71,23 @@ class NumericStringParser(object):
         self.bnf = expr
         # map operator symbols to corresponding arithmetic operations
         epsilon = 1e-12
-        self.opn = {"+": operator.add,
-                    "-": operator.sub,
-                    "*": operator.mul,
-                    "/": operator.truediv,
-                    "^": operator.pow}
-        self.fn = {"sin": math.sin,
-                   "cos": math.cos,
-                   "tan": math.tan,
-                   "exp": math.exp,
-                   "abs": abs,
-                   "trunc": lambda a: int(a),
-                   "round": round,
-                   "sgn": lambda a: abs(a) > epsilon and self.cmp(a, 0) or 0}
+        self.opn = {
+            "+": operator.add,
+            "-": operator.sub,
+            "*": operator.mul,
+            "/": operator.truediv,
+            "^": operator.pow
+        }
+        self.fn = {
+            "sin": math.sin,
+            "cos": math.cos,
+            "tan": math.tan,
+            "exp": math.exp,
+            "abs": abs,
+            "trunc": lambda a: int(a),
+            "round": round,
+            "sgn": lambda a: abs(a) > epsilon and self.cmp(a, 0) or 0
+        }
 
     def evaluateStack(self, s):
         op = s.pop()

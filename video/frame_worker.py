@@ -115,21 +115,24 @@ def extract_video_frame_array(case_hash, videos):
 
         video_pipe = av.open(video.video_path)
         pass_count = 0
-        arr = []
+        img_list = []
         for frame in video_pipe.decode(video=0):
             if pass_count % interval == 0:
                 img = frame.to_image()
-                arr.append(np.array(img))
+                img_list.append(np.array(img))
             pass_count += 1
 
+        # Detect Persons
         mpq = multiprocessing.Queue()
-        mpp = multiprocessing.Process(target=detect_person, args=(arr, mpq))
+        mpp = multiprocessing.Process(
+            target=detect_person, args=(img_list, mpq)
+        )
         mpp.start()
         mpp.join()
         ret = mpq.get()
 
-        save_video_frame(metadata['hash_value'], arr, ret)
-        feature_extract(case_video_path)
+        save_video_frame(metadata['hash_value'], img_list, ret)
+        feature_extract(case_video_path)    # Extract Features
         video.is_detect_done = True
         video.save()
     load.current += 1
