@@ -31,7 +31,9 @@ def cases(request):
                 })
             return Response(data=result)
 
-        cases = Case.objects.filter(case_title=search_query)
+        cases = Case.objects.filter(
+            case_title=search_query
+        ).order_by('generated_datetime')
         result = dict()
         result['cases'] = []
         for case in cases:
@@ -46,12 +48,15 @@ def cases(request):
     # POST
     else:
         base_path = os.path.join(settings.BASE_DIR, 'assets')
-        
-        case = Case.objects.create(
-            case_title=request.data['title'],
-            memo=request.data['memo'],
-            generated_datetime=request.data['datetime'],
-        )
+
+        try:
+            case = Case.objects.create(
+                case_title=request.data['title'],
+                memo=request.data['memo'],
+                generated_datetime=request.data['datetime'],
+            )
+        except Exception as e:
+            return Response(data={'error': 'error'})
         case_path = os.path.join(base_path, case.group_hash_id)
         os.mkdir(case_path)
         case.case_path = case_path

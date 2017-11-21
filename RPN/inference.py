@@ -252,8 +252,8 @@ def main(args):
         rect['height'] = img.shape[0]
         apply_model(img, net, param, rect, image_name, wf)
         cnt += 1
-    #close(f)
-    #close(wf)
+    close(f)
+    close(wf)
 
 
 if __name__ == '__main__':
