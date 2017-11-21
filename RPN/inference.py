@@ -236,6 +236,8 @@ def main(args):
     f = open(args.datalist)
     wf = open(args.output_datalist, 'w')
     cnt = 0
+
+    # Load file list
     for line in f:
         wf.write('# ' + str(cnt) + '\n')
         image_name = line.split(' ')[0]
@@ -258,14 +260,16 @@ def main(args):
 
 if __name__ == '__main__':
     parser = ArgumentParser(
-        description="Gen region proposal datalist")
+        description='Gen region proposal datalist'
+    )
     parser.add_argument(
         'datalist',
-        help="The datalist which need to gen region proposal")
+        help='The datalist which need to gen region proposal'
+    )
     parser.add_argument(
         'output_datalist',
-        help="Output datalist")
+        help='Output datalist'
+    )
     #parser.add_argument('dataset')
     args = parser.parse_args()
     main(args)
-

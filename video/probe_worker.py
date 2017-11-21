@@ -7,8 +7,6 @@ from django.conf import settings
 
 _BATCH_SIZE = 50
 
-_BASE_DIR = '/home/dzzp/Desktop/argos-back/'
-
 _CAFFE_PATH = '/home/dzzp/Desktop/caffe/'
 _CAFFE_CMD = os.path.join(_CAFFE_PATH, 'build/tools/extract_features')
 
@@ -22,7 +20,7 @@ _RPN_PROTO_PATH = os.path.join(_RPN_PATH, 'spindlenet_test.prototxt')
 _CONVERT_CMD = 'python ' + _RPN_PATH + '/convert_lmdb_to_numpy.py'
 
 
-def numericalSort(value):
+def numerical_sort(value):
     numbers = re.compile(r'(\d+)')
     parts = numbers.split(value)
     parts[1::2] = map(int, parts[1::2])
@@ -30,24 +28,28 @@ def numericalSort(value):
 
 
 def feature_extract(video_path):
-    after_rpn = 'after_rpn.txt'
+    after_rpn = os.path.join(video_path, 'feat', 'after_rpn.txt')
     feature_path = os.path.join(video_path, 'feat', 'features.npy')
     file_list_path = os.path.join(video_path, 'feat', 'file_list.txt')
 
+    # Write file list
     with open(file_list_path, 'w') as f:
         f_names = sorted(
-            glob(os.path.join(video_path, 'bbox', '*')), key=numericalSort
+            glob(os.path.join(video_path, 'bbox', '*')), key=numerical_sort
         )
         iter_len = (len(f_names) + _BATCH_SIZE - 1) // _BATCH_SIZE
 
         for f_name in f_names:
             f.write('%s 0\n' % f_name)
 
+    # Generate after_rpn
     subprocess.call('{rpn_inf_cmd} {file_list_path} {after_rpn}'.format(
         rpn_inf_cmd=_RPN_INF_CMD,
         file_list_path=file_list_path,
         after_rpn=after_rpn
     ), shell=True)
+
+    # Generate lmdb
     subprocess.call(
         '{caffe_cmd} {spindle_model} {rpn_proto} fc7/spindle,label {feature_lmdb},{label_lmdb} {iter_len} lmdb GPU 0'.format(
               caffe_cmd=_CAFFE_CMD,
@@ -59,6 +61,7 @@ def feature_extract(video_path):
         ), shell=True
     )
 
+    # Save features
     subprocess.call(
         '{convert_cmd} {feature_lmdb} {feature_path}'.format(
             convert_cmd=_CONVERT_CMD,
@@ -66,6 +69,8 @@ def feature_extract(video_path):
             feature_path=feature_path
         ), shell=True
     )
+
+    # Clean(Remove) lmdb
     subprocess.call(
         'rm -rf {feature_lmdb}'.format(
             feature_lmdb=os.path.join(_RPN_PATH, 'features_lmdb')
