@@ -19,7 +19,7 @@ def cases(request):
     if request.method == 'GET':
         search_query = request.query_params.get('search')
         if search_query == '':
-            cases = Case.objects.all().order_by('generated_datetime')[:5]
+            cases = Case.objects.all().order_by('-generated_datetime')[:10]
             result = dict()
             result['cases'] = []
             for case in cases:
@@ -33,7 +33,7 @@ def cases(request):
 
         cases = Case.objects.filter(
             case_title=search_query
-        ).order_by('generated_datetime')
+        ).order_by('-generated_datetime')
         result = dict()
         result['cases'] = []
         for case in cases:
