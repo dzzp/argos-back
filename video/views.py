@@ -85,35 +85,7 @@ def cases_hash_videos(request, case_hash):
         result['videos'] = []
         video_list = Video.objects.filter(case=case)
         for video in video_list:
-            data = {
-                'path': video.video_path,
-                'hash': video.hash_value,
-                'imgs': []
-            }
-
-            shot_time_list = Person.objects.filter(
-                video=video
-            ).distinct('shot_time')
-            for shot_time in shot_time_list:
-                person_list = Person.objects.filter(
-                    video=video, shot_time=shot_time.shot_time
-                )
-
-                person_data = dict()
-                person_data['datetime'] = str(shot_time.shot_time)
-                person_data['persons'] = []
-                for person in person_list:
-                    orig_path = get_origin_path(
-                        case.case_path, person.person_path
-                    )
-
-                    person_data['persons'].append({
-                        'hash': person.hash_value,
-                        'bbox_path': person.person_path,
-                        'orig_path': orig_path,
-                    })
-                data['imgs'].append(person_data)
-            result['videos'].append(data)
+            result['videos'].append(video.hash_value)
         return Response(data=result)
 
     # POST
@@ -136,13 +108,49 @@ def cases_hash_videos(request, case_hash):
 def cases_hash_videos_hash(request, case_hash, video_hash):
     # GET
     if request.method == 'GET':
-        video = Video.objects.get(hash_value=video_hash)
-        shot_datetime = video.date + video.time
+        try:
+            case = Case.objects.get(group_hash_id=case_hash)
+            video = Video.objects.get(hash_value=video_hash)
+        except:
+            return Response(data={'error': 'error'})
+
+        path = video.video_path
+        memo = video.memo
+        lat = video.lat
+        lng = video.lng
+        datetime_sum = str(datetime.combine(video.date, video.time))
+
+        imgs = []
+        shot_time_list = Person.objects.filter(
+            video=video
+        ).distinct('shot_time')
+        for shot_time in shot_time_list:
+            person_list = Person.objects.filter(
+                video=video, shot_time=shot_time.shot_time
+            )
+
+            person_data = dict()
+            person_data['timedelta'] = str(shot_time.shot_time)
+            person_data['persons'] = []
+            for person in person_list:
+                orig_path = get_origin_path(
+                    case.case_path, person.person_path
+                )
+
+                person_data['persons'].append({
+                    'hash': person.hash_value,
+                    'bbox_path': person.person_path,
+                    'orig_path': orig_path,
+                })
+            imgs.append(person_data)
+
         result = {
-            'memo': video.memo,
-            'lat': video.lat,
-            'lng': video.lng,
-            'datetime': str(shot_datetime),    # TEMP
+            'path': path,
+            'memo': memo,
+            'lat': lat,
+            'lng': lng,
+            'datetime': datetime_sum,
+            'imgs': imgs
         }
 
         return Response(data=result)

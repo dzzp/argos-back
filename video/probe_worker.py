@@ -7,7 +7,7 @@ from django.conf import settings
 
 _BATCH_SIZE = 50
 
-_BASE_DIR = '/home/dzzp/Desktop/argos-back/'
+#_BASE_DIR = '/home/dzzp/Desktop/argos-back/'
 
 _CAFFE_PATH = '/home/dzzp/Desktop/caffe/'
 _CAFFE_CMD = os.path.join(_CAFFE_PATH, 'build/tools/extract_features')
@@ -22,7 +22,7 @@ _RPN_PROTO_PATH = os.path.join(_RPN_PATH, 'spindlenet_test.prototxt')
 _CONVERT_CMD = 'python ' + _RPN_PATH + '/convert_lmdb_to_numpy.py'
 
 
-def numericalSort(value):
+def numerical_sort(value):
     numbers = re.compile(r'(\d+)')
     parts = numbers.split(value)
     parts[1::2] = map(int, parts[1::2])
@@ -36,7 +36,7 @@ def feature_extract(video_path):
 
     with open(file_list_path, 'w') as f:
         f_names = sorted(
-            glob(os.path.join(video_path, 'bbox', '*')), key=numericalSort
+            glob(os.path.join(video_path, 'bbox', '*')), key=numerical_sort
         )
         iter_len = (len(f_names) + _BATCH_SIZE - 1) // _BATCH_SIZE
 
@@ -48,6 +48,18 @@ def feature_extract(video_path):
         file_list_path=file_list_path,
         after_rpn=after_rpn
     ), shell=True)
+
+    '''
+    print('{caffe_cmd} {spindle_model} {rpn_proto} fc7/spindle,label {feature_lmdb},{label_lmdb} {iter_len} lmdb GPU 0'.format(
+              caffe_cmd=_CAFFE_CMD,
+              spindle_model=_SPINDLE_MODEL,
+              rpn_proto=_RPN_PROTO_PATH,
+              feature_lmdb=os.path.join(_RPN_PATH, 'features_lmdb'),
+              label_lmdb=os.path.join(_RPN_PATH, 'label_lmdb'),
+              iter_len=iter_len
+    ))
+    '''
+
     subprocess.call(
         '{caffe_cmd} {spindle_model} {rpn_proto} fc7/spindle,label {feature_lmdb},{label_lmdb} {iter_len} lmdb GPU 0'.format(
               caffe_cmd=_CAFFE_CMD,
