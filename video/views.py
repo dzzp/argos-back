@@ -85,7 +85,49 @@ def cases_hash_videos(request, case_hash):
         result['videos'] = []
         video_list = Video.objects.filter(case=case)
         for video in video_list:
-            result['videos'].append(video.hash_value)
+            path = video.video_path
+            memo = video.memo
+            lat = video.lat
+            lng = video.lng
+            datetime_sum = str(datetime.combine(video.date, video.time))
+            video_hash = video.hash_value
+            is_detection_done = video.is_detect_done
+
+            imgs = []
+            shot_time_list = Person.objects.filter(
+                video=video
+            ).distinct('shot_time')
+            for shot_time in shot_time_list:
+                person_list = Person.objects.filter(
+                    video=video, shot_time=shot_time.shot_time
+                )
+
+                person_data = dict()
+                person_data['timedelta'] = str(shot_time.shot_time)
+                person_data['persons'] = []
+                for person in person_list:
+                    orig_path = get_origin_path(
+                        case.case_path, person.person_path
+                    )
+
+                    person_data['persons'].append({
+                        'hash': person.hash_value,
+                        'bbox_path': person.person_path,
+                        'orig_path': orig_path,
+                    })
+                imgs.append(person_data)
+
+            single_result = {
+                'path': path,
+                'memo': memo,
+                'lat': lat,
+                'lng': lng,
+                'datetime': datetime_sum,
+                'video_hash': video_hash,
+                'is_detection_done': is_detection_done,
+                'imgs': imgs
+            }
+            result['videos'].append(single_result)
         return Response(data=result)
 
     # POST
@@ -119,6 +161,8 @@ def cases_hash_videos_hash(request, case_hash, video_hash):
         lat = video.lat
         lng = video.lng
         datetime_sum = str(datetime.combine(video.date, video.time))
+        video_hash = video.hash_value
+        is_detection_done = video.is_detect_done
 
         imgs = []
         shot_time_list = Person.objects.filter(
@@ -150,6 +194,8 @@ def cases_hash_videos_hash(request, case_hash, video_hash):
             'lat': lat,
             'lng': lng,
             'datetime': datetime_sum,
+            'video_hash': video_hash,
+            'is_detection_done': is_detection_done,
             'imgs': imgs
         }
 
@@ -157,7 +203,8 @@ def cases_hash_videos_hash(request, case_hash, video_hash):
 
     # PUT
     else:
-        datetime_data = datetime.strptime(request.data['datetime'], '%Y-%m-%dT%H:%M:%S')
+        #datetime_data = datetime.strptime(request.data['datetime'], '%Y-%m-%dT%H:%M:%S')
+        datetime_data = datetime.strptime(request.data['datetime'], '%Y-%m-%d %H:%M:%S')
 
         video = Video.objects.get(hash_value=video_hash)
         video.memo = request.data['memo']
