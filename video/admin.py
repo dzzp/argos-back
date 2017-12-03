@@ -40,6 +40,7 @@ class PersonAdmin(admin.ModelAdmin):
         'score',
         'frame_num',
         'shot_time',
+        'status',
     )
 
 
