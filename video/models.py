@@ -2,6 +2,7 @@ import time
 import hashlib
 
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 
 def _generateHash():
@@ -75,10 +76,9 @@ class TestVideo(models.Model):
 
 
 class LoadList(models.Model):
-    case = models.CharField(max_length=8, unique=True)
-    video = models.CharField(max_length=100, default='none')
-    total = models.IntegerField(default=0)
-    current = models.IntegerField(default=0)
+    case = models.ForeignKey('Case', models.CASCADE)
+    total = ArrayField(models.CharField(max_length=7), default=list)
+    current = models.CharField(max_length=7)
 
     def __str__(self):
-        return str(self.video)
+        return str(self.case.group_hash_id)

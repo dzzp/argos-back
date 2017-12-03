@@ -62,7 +62,7 @@ def cases(request):
         case.case_path = case_path
         case.save()
 
-        LoadList.objects.create(case=case.group_hash_id)
+        LoadList.objects.create(case=case)
 
         return Response(data={
             'title': request.data['title'],
@@ -133,6 +133,7 @@ def cases_hash_videos(request, case_hash):
     # POST
     else:
         case = Case.objects.get(group_hash_id=case_hash)
+        load = LoadList.objects.get(case=case)
 
         video_list = []
         for video in request.data['videos']:
@@ -142,6 +143,8 @@ def cases_hash_videos(request, case_hash):
                 memo=video['memo']
             )
             video_list.append(video_obj)
+            load.total.append(video_obj.hash_value)
+        load.save()
         extract_video_frame_array(case_hash, video_list)
         return Response(data={'code': 'ok'})
 
@@ -203,7 +206,6 @@ def cases_hash_videos_hash(request, case_hash, video_hash):
 
     # PUT
     else:
-        #datetime_data = datetime.strptime(request.data['datetime'], '%Y-%m-%dT%H:%M:%S')
         datetime_data = datetime.strptime(request.data['datetime'], '%Y-%m-%d %H:%M:%S')
 
         video = Video.objects.get(hash_value=video_hash)
@@ -354,11 +356,13 @@ def cases_hash_galleries(request, case_hash):
 
 @api_view(['GET', 'POST'])
 def processing(request, case_hash):
-    load = LoadList.objects.get(case=case_hash)
+    try:
+        case = Case.objects.get(group_hash_id=case_hash)
+    except Exception as e:
+        return Response(data={'error': 'error'})
+    load = LoadList.objects.get(case=case)
     data = {
-        'current': load.current,
+        'current': str(load.current),
         'total': load.total,
-        'video': load.video,
-        'code': 'processing_detect'
     }
     return Response(data=data)

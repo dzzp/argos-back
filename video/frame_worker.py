@@ -7,7 +7,7 @@ import multiprocessing
 
 from PIL import Image, ImageDraw
 
-from video.models import Video, Person, LoadList
+from video.models import Case, Video, Person, LoadList
 from video.calculation import NumericStringParser
 from object_detection.main import detect_person
 
@@ -85,15 +85,18 @@ def save_video_frame(hash_value, frames, bbox_list):
 
 
 def extract_video_frame_array(case_hash, videos):
-    load = LoadList.objects.get(case=case_hash)
-    load.total = len(videos)
-    load.current = -1
-    load.save()
+    case = Case.objects.get(group_hash_id=case_hash)
+    load = LoadList.objects.get(case=case)
 
-    for video in videos:
-        load.video = video.video_path
-        load.current = load.current + 1
+    count = 0
+    for count in range(0, len(load.total)):
+        load.current = load.total[count]
         load.save()
+
+        video = Video.objects.get(hash_value=load.current)
+        if video.is_detect_done == True:
+            count += 1
+            continue
 
         case_path = video.case.case_path
         folder_name = '%s_%s' % (
@@ -135,5 +138,5 @@ def extract_video_frame_array(case_hash, videos):
         feature_extract(case_video_path)    # Extract Features
         video.is_detect_done = True
         video.save()
-    load.current += 1
-    load.save()
+        
+        count += 1

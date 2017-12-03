@@ -48,7 +48,7 @@ class ProbeListAdmin(admin.ModelAdmin):
 
 
 class LoadListAdmin(admin.ModelAdmin):
-    list_display = ('video', 'current', 'total',)
+    list_display = ('case', 'current', 'total',)
 
 
 class TestVideoAdmin(admin.ModelAdmin):
