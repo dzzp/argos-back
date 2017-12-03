@@ -48,6 +48,12 @@ class Video(models.Model):
 
 
 class Person(models.Model):
+    _CHOICES = (
+        ('U', 'Undefined'),
+        ('P', 'Positive'),
+        ('N', 'Negative'),
+    )
+
     _id = models.AutoField(primary_key=True)
     hash_value = models.CharField(
         max_length=7, default=_generateHash, unique=True
@@ -57,6 +63,11 @@ class Person(models.Model):
     score = models.FloatField()
     frame_num = models.IntegerField()
     shot_time = models.TimeField(auto_now_add=False)
+    status = models.CharField(
+        max_length=1,
+        choices=_CHOICES,
+        default='U',
+    )
 
     def __str__(self):
         return str(self._id)
