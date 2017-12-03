@@ -88,14 +88,12 @@ def extract_video_frame_array(case_hash, videos):
     case = Case.objects.get(group_hash_id=case_hash)
     load = LoadList.objects.get(case=case)
 
-    count = 0
-    for count in range(0, len(load.total)):
-        load.current = load.total[count]
+    while len(load.total):
+        load.current = load.total.pop()
         load.save()
 
         video = Video.objects.get(hash_value=load.current)
         if video.is_detect_done == True:
-            count += 1
             continue
 
         case_path = video.case.case_path
@@ -138,5 +136,3 @@ def extract_video_frame_array(case_hash, videos):
         feature_extract(case_video_path)    # Extract Features
         video.is_detect_done = True
         video.save()
-        
-        count += 1

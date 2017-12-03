@@ -135,6 +135,7 @@ def cases_hash_videos(request, case_hash):
         case = Case.objects.get(group_hash_id=case_hash)
         load = LoadList.objects.get(case=case)
 
+        already_running = len(load.total) > 0
         video_list = []
         for video in request.data['videos']:
             video_obj = Video.objects.create(
@@ -145,7 +146,8 @@ def cases_hash_videos(request, case_hash):
             video_list.append(video_obj)
             load.total.append(video_obj.hash_value)
         load.save()
-        extract_video_frame_array(case_hash, video_list)
+        if not already_running:
+            extract_video_frame_array(case_hash, video_list)
         return Response(data={'code': 'ok'})
 
 
