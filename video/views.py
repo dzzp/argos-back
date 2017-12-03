@@ -226,20 +226,26 @@ def cases_hash_probes(request, case_hash):
     # GET
     if request.method == 'GET':
         case = Case.objects.get(group_hash_id=case_hash)
+        videos = Video.objects.filter(case=case)
 
         result = dict()
         result['persons'] = []
-        probe_list = ProbeList.objects.filter(case=case)
+        #probe_list = ProbeList.objects.filter(case=case)
+        persons = []
+        for video in videos:
+            items = Person.objects.filter(video=video, status='P')
+            for item in items:
+                persons.append(item)
 
-        for probe in probe_list:
+        for person in persons:
             orig_path = get_origin_path(
-                case.case_path, probe.person.person_path
+                case.case_path, person.person_path
             )
 
             result['persons'].append({
-                'person_hash': probe.person.hash_value,
-                'video_hash': probe.person.video.hash_value,
-                'bbox_path': probe.person.person_path,
+                'person_hash': person.hash_value,
+                'video_hash': person.video.hash_value,
+                'bbox_path': person.person_path,
                 'orig_path': orig_path,
             })
 
@@ -248,8 +254,10 @@ def cases_hash_probes(request, case_hash):
     # POST
     else:
         case = Case.objects.get(group_hash_id=case_hash)
-        person_hash_list = request.data['persons']
+        positive_list = request.data['positives']
+        negative_list = request.data['negatives']
 
+        '''
         # Reset probe list
         probe_check = ProbeList.objects.all()
         if probe_check.count() > 0:
@@ -258,6 +266,17 @@ def cases_hash_probes(request, case_hash):
         for person_hash in person_hash_list:
             person = Person.objects.get(hash_value=person_hash)
             ProbeList.objects.create(case=case, person=person)
+        '''
+
+        for positive in positive_list:
+            person = Person.objects.get(hash_value=positive)
+            person.status = 'P'
+        
+        for negative in negative_list:
+            person = Person.objects.get(hash_value=negative)
+            person.status = 'N'
+        person.save()
+
         return Response(data={'code': 'ok'})
 
 
@@ -320,9 +339,15 @@ def cases_hash_galleries(request, case_hash):
     result = dict()
     result['persons'] = []
 
-    probe_list = ProbeList.objects.filter(case=case)
-    for probe in probe_list:
-        person_index = total_file_list.index(probe.person.person_path)
+    videos = Video.objects.filter(case=case)
+    persons = []
+    for video in videos:
+        items = Person.objects.filter(video=video, status='P')
+        for item in items:
+            persons.append(item)
+
+    for person in persons:
+        person_index = total_file_list.index(person.person_path)
         person_feat = feat_list[person_index]
 
         candidates, distances = tree.get_nns_by_vector(
