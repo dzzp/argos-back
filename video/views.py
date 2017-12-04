@@ -271,11 +271,12 @@ def cases_hash_probes(request, case_hash):
         for positive in positive_list:
             person = Person.objects.get(hash_value=positive)
             person.status = 'P'
-        
+            person.save()
+
         for negative in negative_list:
             person = Person.objects.get(hash_value=negative)
             person.status = 'N'
-        person.save()
+            person.save()
 
         return Response(data={'code': 'ok'})
 
@@ -362,10 +363,12 @@ def cases_hash_galleries(request, case_hash):
             candidates_dict[cand].append(distances[index])
     candidates_list = [(total_file_list[i], min(candidates_dict[i])) for i in candidates_dict.keys()]
     candidates_list.sort(key=lambda x: x[1])
-    candidates_list = candidates_list[:100]
+    candidates_list = candidates_list[:1000]
 
     for candidate, distance in candidates_list:
         person = Person.objects.get(person_path=candidate)
+        if person.status != 'U':
+            continue
         orig_path = get_origin_path(
             case.case_path, person.person_path
         )
@@ -377,6 +380,8 @@ def cases_hash_galleries(request, case_hash):
             'orig_path': orig_path,
             'distance': distance
         })
+        if len(result['persons']) >= 10:
+            break
 
     return Response(data=result)
 
@@ -389,7 +394,7 @@ def processing(request, case_hash):
         return Response(data={'error': 'error'})
     load = LoadList.objects.get(case=case)
     if load.current:
-        load.total += [load.current]
+        load.total.append(load.current)
     data = {
         'total': load.total
     }
