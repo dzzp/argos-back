@@ -93,9 +93,6 @@ DATABASES = {
         #'HOST': 'localhost',
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
         'PORT': '',
-        'OPTIONS': {
-            'sslmode': 'disable',
-        },
     }
 }
 
