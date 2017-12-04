@@ -73,15 +73,6 @@ class Person(models.Model):
         return str(self._id)
 
 
-class ProbeList(models.Model):
-    _id = models.AutoField(primary_key=True)
-    case = models.ForeignKey('Case', on_delete=models.CASCADE)
-    person = models.ForeignKey('Person', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return str(self._id)
-
-
 class TestVideo(models.Model):
     video = models.FileField(upload_to='assets/')
 

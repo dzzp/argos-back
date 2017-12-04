@@ -1,7 +1,7 @@
 from django.contrib import admin
 from video.models import (
     Case, Video, Person,
-    ProbeList, LoadList, TestVideo,
+    LoadList, TestVideo,
 )
 
 
@@ -44,10 +44,6 @@ class PersonAdmin(admin.ModelAdmin):
     )
 
 
-class ProbeListAdmin(admin.ModelAdmin):
-    list_display = ('case', 'person',)
-
-
 class LoadListAdmin(admin.ModelAdmin):
     list_display = ('case', 'current', 'total',)
 
@@ -59,6 +55,5 @@ class TestVideoAdmin(admin.ModelAdmin):
 admin.site.register(Case, CaseAdmin)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(Person, PersonAdmin)
-admin.site.register(ProbeList, ProbeListAdmin)
 admin.site.register(LoadList, LoadListAdmin)
 admin.site.register(TestVideo, TestVideoAdmin)

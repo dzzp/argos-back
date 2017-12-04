@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view
 
 from data_picker.tools import get_origin_path
 from video.frame_worker import extract_video_frame_array
-from video.models import Case, Video, Person, ProbeList, LoadList
+from video.models import Case, Video, Person, LoadList
 
 
 @api_view(['GET', 'POST'])
@@ -230,7 +230,6 @@ def cases_hash_probes(request, case_hash):
 
         result = dict()
         result['persons'] = []
-        #probe_list = ProbeList.objects.filter(case=case)
         persons = []
         for video in videos:
             items = Person.objects.filter(video=video, status='P')
@@ -257,21 +256,9 @@ def cases_hash_probes(request, case_hash):
         positive_list = request.data['positives']
         negative_list = request.data['negatives']
 
-        '''
-        # Reset probe list
-        probe_check = ProbeList.objects.all()
-        if probe_check.count() > 0:
-            probe_check.delete()
-
-        for person_hash in person_hash_list:
-            person = Person.objects.get(hash_value=person_hash)
-            ProbeList.objects.create(case=case, person=person)
-        '''
-
         for positive in positive_list:
             person = Person.objects.get(hash_value=positive)
             person.status = 'P'
-        
         for negative in negative_list:
             person = Person.objects.get(hash_value=negative)
             person.status = 'N'
