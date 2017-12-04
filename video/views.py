@@ -388,8 +388,9 @@ def processing(request, case_hash):
     except Exception as e:
         return Response(data={'error': 'error'})
     load = LoadList.objects.get(case=case)
+    if load.current:
+        load.total += [load.current]
     data = {
-        'current': str(load.current),
-        'total': load.total,
+        'total': load.total
     }
     return Response(data=data)

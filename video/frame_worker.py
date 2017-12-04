@@ -136,3 +136,6 @@ def extract_video_frame_array(case_hash, videos):
         feature_extract(case_video_path)    # Extract Features
         video.is_detect_done = True
         video.save()
+
+    load.current = ''
+    load.save()
