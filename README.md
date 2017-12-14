@@ -23,6 +23,21 @@ data-picker with django
 
 _and more libraries.._
 
+## Object detection model
+
+You need to download a object detection model from [here](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
+
+**object_detection/main.py**
+
+```python
+...
+MODEL_NAME = os.path.join(
+    settings.BASE_DIR,
+    'object_detection/faster_rcnn_resnet101_coco_2017_11_08',    # HERE!
+)
+...
+```
+
 ## API Documentation
 
 [HERE](https://github.com/dzzp/argos-api)
