@@ -1,6 +1,6 @@
 # ARGOS-BACK
 
-data-picker with django
+argos-back for [argos-front](https://github.com/dzzp/argos-front)
 
 ## Environments
 
